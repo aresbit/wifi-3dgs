@@ -1,0 +1,23 @@
+import SwiftUI
+import CryptoKit
+
+/// Deterministic color assignment for SSIDs using SHA-1 hash,
+/// matching the JavaScript `getColorForSSID()` behavior.
+struct SSIDColorHasher {
+    private let palette: [Color]
+
+    init(palette: [Color] = Constants.palette) {
+        self.palette = palette
+    }
+
+    func color(for ssid: String?) -> Color {
+        guard let ssid, !ssid.isEmpty, ssid.lowercased() != "n/a" else {
+            return Constants.graySSIDColor
+        }
+        let data = Data(ssid.utf8)
+        let hash = Insecure.SHA1.hash(data: data)
+        let firstElement = hash.withUnsafeBytes { $0[0] }
+        let index = Int(firstElement) % palette.count
+        return palette[index]
+    }
+}
