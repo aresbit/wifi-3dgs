@@ -5,7 +5,7 @@
 Simple, open-source Wi-Fi channel and signal strength analyzer for macOS.
 Built with SwiftUI, CoreWLAN, and Sparkle.
 
-![screenshot](assets/screenshot.png)
+![screenshot](assets/screenshot-swiftui.png)
 
 ## Features
 
