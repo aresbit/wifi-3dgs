@@ -72,7 +72,9 @@ enum NetworkInfoService {
             case .mode11n:  return "802.11n"
             case .mode11ac: return "802.11ac"
             case .mode11ax: return "802.11ax"
+            #if canImport(CoreWLAN) && swift(>=5.9)
             case .mode11be: return "802.11be"
+            #endif
             case .modeNone: return nil
             @unknown default: return nil
             }
