@@ -55,7 +55,7 @@ struct NativeTableView: NSViewRepresentable {
         addColumn(to: tableView, id: "r", title: "r", width: 28, sortKey: "supportsR", ascending: false)
         addColumn(to: tableView, id: "v", title: "v", width: 28, sortKey: "supportsV", ascending: false)
         addColumn(to: tableView, id: "WPA3", title: "WPA3", width: 50, sortKey: "supportsWPA3", ascending: false)
-        addColumn(to: tableView, id: "Sec", title: "Sec", width: 55, sortKey: "security", ascending: true)
+        addColumn(to: tableView, id: "Sec", title: "Sec", width: 120, sortKey: "security", ascending: true)
         addColumn(to: tableView, id: "MCS", title: "MCS", width: 36, sortKey: "mcs", ascending: false)
         addColumn(to: tableView, id: "NSS", title: "NSS", width: 36, sortKey: "nss", ascending: false)
         addColumn(to: tableView, id: "CC", title: "CC", width: 36, sortKey: "country", ascending: true)
