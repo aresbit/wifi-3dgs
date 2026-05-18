@@ -93,7 +93,7 @@ enum ChannelSpanCalculator {
         colorHasher: SSIDColorHasher
     ) -> [ChartSeriesData] {
         var series: [ChartSeriesData] = []
-        for (index, nw) in networks.enumerated() {
+        for nw in networks {
             let band = nw.channel.band
             let reportedChannel = nw.channel.channelNumber
             let widthMHz = nw.channel.channelWidthMHz
@@ -108,12 +108,11 @@ enum ChannelSpanCalculator {
 
             let apex = Double(left + right) / 2.0
 
-            // Guarantee unique IDs per scan, even when CoreWLAN returns duplicate BSSID/channel entries
-            let baseID = "\(nw.bssid)-\(reportedChannel)-\(band.rawValue)"
-            let uniqueID = "\(baseID)-\(index)"
+            // Stable ID across scans: caller guarantees no duplicate (bssid, channel, band) tuples
+            let stableID = "\(nw.bssid)-\(reportedChannel)-\(band.rawValue)"
 
             series.append(ChartSeriesData(
-                id: uniqueID,
+                id: stableID,
                 ssid: nw.ssid ?? "n/a",
                 bssid: nw.bssid,
                 channel: reportedChannel,

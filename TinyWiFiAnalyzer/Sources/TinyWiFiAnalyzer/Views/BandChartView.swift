@@ -2,10 +2,10 @@ import SwiftUI
 
 struct BandChartView: View {
     @Bindable var viewModel: BandChartViewModel
+    @Bindable var scannerViewModel: ScannerViewModel
 
-    private let leftAxisWidth: CGFloat = 40
-    private let bottomAxisHeight: CGFloat = 24
-    private let legendWidth: CGFloat = 180
+    private let leftAxisWidth: CGFloat = 36
+    private let bottomAxisHeight: CGFloat = 20
 
     var body: some View {
         VStack(spacing: 0) {
@@ -19,47 +19,8 @@ struct BandChartView: View {
         }
     }
 
-    // MARK: - Toolbar
-
     private var chartToolbar: some View {
         HStack(spacing: 4) {
-            Button {
-                viewModel.toggleFreeze()
-            } label: {
-                Image(systemName: viewModel.isFrozen ? "play.fill" : "pause.fill")
-                    .frame(width: 24, height: 24)
-            }
-            .help(viewModel.isFrozen ? "Resume" : "Pause")
-
-            Button {
-                viewModel.showFilterPopover.toggle()
-            } label: {
-                Image(systemName: "line.3.horizontal.decrease")
-                    .frame(width: 24, height: 24)
-            }
-            .help("Filter")
-            .popover(isPresented: $viewModel.showFilterPopover) {
-                FilterPopoverView(viewModel: viewModel)
-            }
-            .overlay(alignment: .topTrailing) {
-                if viewModel.hasFilter {
-                    Circle()
-                        .fill(.orange)
-                        .frame(width: 6, height: 6)
-                        .offset(x: 4, y: 0)
-                }
-            }
-
-            Button {
-                viewModel.toggleExpand()
-            } label: {
-                Image(systemName: viewModel.isExpanded
-                    ? "arrow.down.right.and.arrow.up.left"
-                    : "arrow.up.left.and.arrow.down.right")
-                    .frame(width: 24, height: 24)
-            }
-            .help("Toggle Expand")
-
             if viewModel.zoomMin != nil {
                 Button {
                     viewModel.resetZoom()
@@ -71,23 +32,10 @@ struct BandChartView: View {
             }
 
             Spacer()
-
-            Text(viewModel.band.displayName)
-                .font(.headline)
-
-            Spacer()
-
-            ExportMenuView(
-                seriesData: viewModel.displayedSeriesData,
-                band: viewModel.band,
-                chartView: AnyView(chartContent)
-            )
         }
         .padding(.horizontal, 8)
-        .padding(.vertical, 4)
+        .padding(.vertical, 2)
     }
-
-    // MARK: - Chart Content
 
     private var chartContent: some View {
         Group {
@@ -99,50 +47,14 @@ struct BandChartView: View {
                         .font(.system(size: 16))
                     Spacer()
                 }
-                .frame(height: chartHeight)
             } else {
                 GeometryReader { geometry in
-                    HStack(spacing: 0) {
-                        legendPanel
-                        chartCanvas
-                    }
-                    .gesture(zoomGesture(in: geometry))
+                    chartCanvas
+                        .gesture(zoomGesture(in: geometry))
                 }
-                .frame(height: chartHeight)
             }
         }
     }
-
-    // MARK: - Legend Panel
-
-    private var legendPanel: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 2) {
-                ForEach(viewModel.displayedSeriesData) { series in
-                    HStack(spacing: 4) {
-                        Circle()
-                            .fill(series.color)
-                            .frame(width: 8, height: 8)
-                        VStack(alignment: .leading, spacing: 0) {
-                            Text("Channel: \(series.channel) RSSI: \(series.rssi)dBm")
-                                .font(.caption2)
-                            Text(series.displaySSID)
-                                .font(.caption)
-                                .bold()
-                            Text(series.bssid)
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .opacity(series.isFilteredOut ? Constants.filteredOutOpacity : 1.0)
-                }
-            }
-            .padding(.vertical, 4)
-        }
-        .frame(width: legendWidth)
-    }
-
-    // MARK: - Canvas Chart
 
     private var chartCanvas: some View {
         Canvas { context, size in
@@ -155,7 +67,10 @@ struct BandChartView: View {
             let xMin = viewModel.zoomMin ?? Double(xDataMin)
             let xMax = viewModel.zoomMax ?? Double(viewModel.band.maxChannel)
             let yMin = Double(Constants.rssiNoiseFloor)
-            let yMax = 0.0
+
+            // Dynamic y-axis: scale to the strongest visible signal, rounded up to nearest 10
+            let strongestRSSI = viewModel.displayedSeriesData.map(\.rssi).max() ?? 0
+            let yMax = min(0.0, ceil(Double(strongestRSSI) / 10.0) * 10)
 
             let scaleX = chartRect.width / (xMax - xMin)
             let scaleY = chartRect.height / (yMax - yMin)
@@ -169,7 +84,6 @@ struct BandChartView: View {
 
             let gridColor = Color.gray.opacity(0.15)
 
-            // Horizontal grid (RSSI every 10 dBm)
             for rssiVal in stride(from: Int(yMin), through: Int(yMax), by: 10) {
                 let rssi = Double(rssiVal)
                 let y = chartRect.maxY - (rssi - yMin) * scaleY
@@ -184,7 +98,6 @@ struct BandChartView: View {
                 )
             }
 
-            // Vertical grid (channel labels)
             let desiredTicks = min(viewModel.band.maxChannel - Int(xMin), 15)
             let rawStep = max(1, Int((xMax - xMin) / Double(desiredTicks)))
             let step = max(1, rawStep)
@@ -204,7 +117,6 @@ struct BandChartView: View {
                 )
             }
 
-            // Axis lines
             var xAxis = Path()
             xAxis.move(to: CGPoint(x: chartRect.minX, y: chartRect.maxY))
             xAxis.addLine(to: CGPoint(x: chartRect.maxX, y: chartRect.maxY))
@@ -215,28 +127,32 @@ struct BandChartView: View {
             yAxis.addLine(to: CGPoint(x: chartRect.minX, y: chartRect.maxY))
             context.stroke(yAxis, with: .color(.secondary), lineWidth: 1)
 
-            // Axis titles
-            context.draw(
-                Text("dBm").font(.caption).foregroundColor(.secondary),
-                at: CGPoint(x: 20, y: chartRect.midY)
-            )
-            context.draw(
-                Text("channel").font(.caption).foregroundColor(.secondary),
-                at: CGPoint(x: chartRect.midX, y: size.height - 4)
-            )
-
-            // Clip to chart area so curves don't overflow the axes
             let clipPath = Path(chartRect)
             context.clip(to: clipPath)
 
-            // Draw each network as a Gaussian bell curve
             for series in viewModel.displayedSeriesData {
-                let areaOpacity = series.isFilteredOut
-                    ? Constants.filteredOutOpacity : 0.3
-                let strokeOpacity = series.isFilteredOut
-                    ? Constants.filteredOutOpacity : 0.6
-                let curve = series.curvePoints
+                let isSelected = scannerViewModel.selectedNetworkID == series.id
+                let hasSelection = scannerViewModel.selectedNetworkID != nil
 
+                let areaOpacity: Double
+                let strokeOpacity: Double
+                let strokeWidth: CGFloat
+
+                if isSelected {
+                    areaOpacity = 0.55
+                    strokeOpacity = 1.0
+                    strokeWidth = 2
+                } else if hasSelection {
+                    areaOpacity = series.isFilteredOut ? 0.05 : 0.10
+                    strokeOpacity = series.isFilteredOut ? 0.08 : 0.20
+                    strokeWidth = 1
+                } else {
+                    areaOpacity = series.isFilteredOut ? Constants.filteredOutOpacity : 0.3
+                    strokeOpacity = series.isFilteredOut ? Constants.filteredOutOpacity : 0.6
+                    strokeWidth = 1
+                }
+
+                let curve = series.curvePoints
                 guard curve.count >= 2 else { continue }
 
                 var path = Path()
@@ -244,13 +160,12 @@ struct BandChartView: View {
                 for pt in curve.dropFirst() {
                     path.addLine(to: dataToPoint(channel: pt.x, rssi: pt.y))
                 }
-                // Close down to the noise floor
                 path.addLine(to: dataToPoint(channel: Double(series.right), rssi: yMin))
                 path.addLine(to: dataToPoint(channel: Double(series.left), rssi: yMin))
                 path.closeSubpath()
 
                 context.fill(path, with: .color(series.color.opacity(areaOpacity)))
-                context.stroke(path, with: .color(series.color.opacity(strokeOpacity)), lineWidth: 1)
+                context.stroke(path, with: .color(series.color.opacity(strokeOpacity)), lineWidth: strokeWidth)
             }
         }
         .overlay {
@@ -261,12 +176,11 @@ struct BandChartView: View {
                 xDataMin: xDataMin,
                 xDataMax: viewModel.band.maxChannel,
                 zoomMin: viewModel.zoomMin,
-                zoomMax: viewModel.zoomMax
+                zoomMax: viewModel.zoomMax,
+                selectedNetworkID: scannerViewModel.selectedNetworkID
             )
         }
     }
-
-    // MARK: - Zoom Gesture
 
     private func zoomGesture(in geometry: GeometryProxy) -> some Gesture {
         DragGesture(minimumDistance: 10)
@@ -276,7 +190,7 @@ struct BandChartView: View {
                 guard endX - startX > 20 else { return }
 
                 let totalWidth = geometry.size.width
-                let chartAreaLeft = leftAxisWidth + legendWidth
+                let chartAreaLeft = leftAxisWidth
                 let chartAreaWidth = totalWidth - chartAreaLeft
                 guard chartAreaWidth > 0 else { return }
 
@@ -293,8 +207,6 @@ struct BandChartView: View {
             }
     }
 
-    // MARK: - Expanded Overlay
-
     private var expandedOverlay: some View {
         ZStack(alignment: .topTrailing) {
             Color(nsColor: .windowBackgroundColor)
@@ -302,11 +214,8 @@ struct BandChartView: View {
 
             VStack(spacing: 0) {
                 chartToolbar
-                HStack(spacing: 0) {
-                    legendPanel
-                    chartCanvas
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                chartCanvas
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             .padding()
 
@@ -323,16 +232,10 @@ struct BandChartView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    // MARK: - Helpers
-
     private var xDataMin: Int {
-        // 2.4 GHz channels start at 1 but channel spans can go below (e.g. ch1 20MHz → span -1–3)
         viewModel.band == .band24GHz ? -1 : 1
     }
-    private var chartHeight: CGFloat { 300 }
 }
-
-// MARK: - Data Label Overlay
 
 private struct DataLabelOverlay: View {
     let seriesData: [ChartSeriesData]
@@ -342,6 +245,7 @@ private struct DataLabelOverlay: View {
     let xDataMax: Int
     let zoomMin: Double?
     let zoomMax: Double?
+    let selectedNetworkID: String?
 
     var body: some View {
         GeometryReader { geometry in
@@ -355,14 +259,17 @@ private struct DataLabelOverlay: View {
             let scaleX = chartRect.width / (xMax - xMin)
             let yRange = 0.0 - Double(Constants.rssiNoiseFloor)
             let scaleY = chartRect.height / yRange
+            let hasSelection = selectedNetworkID != nil
 
             ForEach(seriesData) { series in
-                if !series.isFilteredOut {
+                if !series.isFilteredOut || series.id == selectedNetworkID {
                     let px = chartRect.minX + (Double(series.channel) - xMin) * scaleX
                     let py = chartRect.maxY - (Double(series.rssi) - Double(Constants.rssiNoiseFloor)) * scaleY - 10
+                    let opacity: Double = hasSelection ? (series.id == selectedNetworkID ? 1.0 : 0.25) : 1.0
                     Text("\(series.channel) \(series.displaySSID)")
                         .font(.system(size: 9))
                         .foregroundColor(series.color)
+                        .opacity(opacity)
                         .position(x: px, y: py)
                 }
             }

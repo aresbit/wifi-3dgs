@@ -1,159 +1,342 @@
 import SwiftUI
-import CoreLocation
+
+private let headerHeight: CGFloat = 28
+private let toolbarHeight: CGFloat = 34
 
 struct ContentView: View {
     @Bindable var viewModel: ScannerViewModel
     @Environment(\.scenePhase) private var scenePhase
 
+    @State private var sortOrder: [KeyPathComparator<NetworkTableRow>] = []
+    @State private var is2GHzCollapsed = false
+    @State private var is5GHzCollapsed = false
+    @State private var is6GHzCollapsed = false
+    @State private var isTableCollapsed = false
+
     var body: some View {
         VStack(spacing: 0) {
-            statusBar
-            ScrollView {
-                VStack(spacing: 16) {
-                    if shouldShowEmptyState {
-                        emptyState
-                    } else {
-                        ForEach(viewModel.bandViewModels, id: \.band.id) { bandVM in
-                            BandChartView(viewModel: bandVM)
-                                .padding(.horizontal)
-                        }
-                    }
-                }
-                .padding(.vertical)
-            }
+            unifiedToolbar
+            Divider()
+            dashboardContent
         }
-        .frame(minWidth: 600, idealWidth: 900, minHeight: 400)
-        .task {
-            await viewModel.start()
-        }
+        .frame(minWidth: 700, idealWidth: 1000, minHeight: 600)
+        .task { await viewModel.start() }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
                 Task { await viewModel.handleSceneDidBecomeActive() }
             }
         }
-        .onDisappear {
-            viewModel.stop()
-        }
+        .onDisappear { viewModel.stop() }
     }
 
-    private var statusBar: some View {
-        HStack(spacing: 16) {
-            HStack(spacing: 4) {
-                Circle()
-                    .fill(authStatusColor)
-                    .frame(width: 6, height: 6)
-                Text("Location: \(authStatusLabel)")
+    // MARK: - Unified Toolbar
+
+    private var unifiedToolbar: some View {
+        HStack(spacing: 8) {
+            TextField("Filter by SSID or BSSID…", text: $viewModel.globalFilterQuery)
+                .textFieldStyle(.roundedBorder)
+                .frame(maxWidth: 300)
+
+            if !viewModel.globalFilterQuery.isEmpty {
+                Button("Clear") {
+                    viewModel.globalFilterQuery = ""
+                }
+                .buttonStyle(.plain)
+                .font(.caption)
+                .foregroundColor(.secondary)
+            }
+
+            Spacer()
+
+            if viewModel.interfaceName.isEmpty == false {
+                Text(viewModel.interfaceName)
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
-
-            Text("State: \(accessStateLabel)")
-                .font(.caption)
-                .foregroundColor(.secondary)
-
-            if !viewModel.interfaceName.isEmpty {
-                Text("Interface: \(viewModel.interfaceName)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-
-            let totalNetworks = viewModel.bandViewModels.reduce(0) { $0 + $1.allSeriesData.count }
-            Text("Networks: \(totalNetworks)")
-                .font(.caption)
-                .foregroundColor(.secondary)
-
-            let ssidCount = viewModel.bandViewModels.reduce(0) { count, vm in
-                count + vm.allSeriesData.filter { $0.ssid != "n/a" }.count
-            }
-            Text("SSIDs: \(ssidCount)")
-                .font(.caption)
-                .foregroundColor(.secondary)
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 4)
-        .background(Color(nsColor: .windowBackgroundColor).opacity(0.95))
+        .frame(height: toolbarHeight)
     }
 
-    private var authStatusColor: Color {
-        switch viewModel.locationManager.authorizationStatus {
-        case .authorized, .authorizedAlways, .authorizedWhenInUse: .green
-        case .denied, .restricted: .red
-        case .notDetermined: .orange
-        @unknown default: .gray
+    // MARK: - Dashboard Content
+
+    private var dashboardContent: some View {
+        GeometryReader { geometry in
+            let totalH = geometry.size.height
+            let sections = visibleSections
+            let heights = computeHeights(sections: sections, totalH: totalH)
+
+            VStack(spacing: 0) {
+                if shouldShowEmptyState {
+                    emptyState
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    ForEach(sections.indices, id: \.self) { idx in
+                        let section = sections[idx]
+
+                        if isCollapsed(section) {
+                            sectionHeader(section)
+                        } else {
+                            sectionHeader(section)
+                            sectionContent(section, height: heights[idx])
+                        }
+
+                        if idx < sections.count - 1 {
+                            Divider()
+                        }
+                    }
+                }
+            }
         }
     }
 
-    private var authStatusLabel: String {
-        switch viewModel.locationManager.authorizationStatus {
-        case .authorized, .authorizedAlways, .authorizedWhenInUse: "Granted"
-        case .denied: "Denied"
-        case .restricted: "Restricted"
-        case .notDetermined: "Pending"
-        @unknown default: "Unknown"
+    /// Compute proportional heights: charts weight 1, table weight 1.5
+    private func computeHeights(sections: [SectionInfo], totalH: CGFloat) -> [CGFloat] {
+        let allHeaders = CGFloat(sections.count) * headerHeight
+        let contentPool = totalH - allHeaders
+
+        // Build weights for each section
+        let weights = sections.map { section -> CGFloat in
+            if case .table = section.kind { return 1.5 }
+            return 1.0
+        }
+        let totalWeight = sections.enumerated()
+            .filter { !isCollapsed($0.element) }
+            .map { weights[$0.offset] }
+            .reduce(0, +)
+
+        var result: [CGFloat] = Array(repeating: 0, count: sections.count)
+        for (idx, section) in sections.enumerated() {
+            if isCollapsed(section) {
+                result[idx] = headerHeight
+            } else {
+                let fraction = weights[idx] / max(1, totalWeight)
+                result[idx] = max(60, contentPool * fraction)
+            }
+        }
+        return result
+    }
+
+    // MARK: - Section Header
+
+    private func sectionHeader(_ section: SectionInfo) -> some View {
+        Button {
+            withAnimation { toggleCollapse(section) }
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: isCollapsed(section) ? "chevron.right" : "chevron.down")
+                    .font(.caption)
+                    .frame(width: 12)
+
+                section.icon
+
+                Text(section.title)
+                    .font(.system(size: 12, weight: .semibold))
+
+                if section.isChart, let bandVM = section.bandVM {
+                    Button {
+                        bandVM.toggleFreeze()
+                    } label: {
+                        Image(systemName: bandVM.isFrozen ? "play.fill" : "pause.fill")
+                            .font(.caption2)
+                    }
+                    .buttonStyle(.plain)
+                    .help(bandVM.isFrozen ? "Resume" : "Pause")
+                }
+
+                Spacer()
+
+                Text(section.subtitle)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.horizontal, 10)
+            .frame(height: headerHeight)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - Section Content
+
+    @ViewBuilder
+    private func sectionContent(_ section: SectionInfo, height: CGFloat) -> some View {
+        switch section.kind {
+        case .band(let bandVM):
+            BandChartView(viewModel: bandVM, scannerViewModel: viewModel)
+                .frame(height: height)
+
+        case .table:
+            bottomTable
+                .frame(height: height)
         }
     }
 
-    private var accessStateLabel: String {
-        switch viewModel.accessState {
-        case .waitingForAuthorization: "Waiting for authorization"
-        case .denied: "Permission denied"
-        case .scanning: "Scanning"
-        case .grantedButSSIDUnavailable: "SSID unavailable"
-        case .scanFailed: "Scan failed"
+    // MARK: - Bottom Table (shared)
+
+    private var bottomTable: some View {
+        Table(viewModel.combinedTableRows, selection: selectionBinding, sortOrder: $sortOrder) {
+            TableColumn("") { row in
+                Circle()
+                    .fill(row.color)
+                    .frame(width: 8, height: 8)
+                    .opacity(rowOpacity(row))
+            }
+            .width(24)
+
+            TableColumn("SSID", value: \.ssid) { row in
+                Text(row.ssid).opacity(rowOpacity(row))
+            }
+            .width(min: 160, ideal: 220)
+
+            TableColumn("Band", value: \.bandLabel) { row in
+                Text(row.bandLabel).opacity(rowOpacity(row))
+            }
+            .width(min: 60, ideal: 80)
+
+            TableColumn("Ch", value: \.channel) { row in
+                Text("\(row.channel)").opacity(rowOpacity(row))
+            }
+            .width(min: 40, ideal: 50)
+
+            TableColumn("RSSI", value: \.rssi) { row in
+                Text("\(row.rssi) dBm").opacity(rowOpacity(row))
+            }
+            .width(min: 60, ideal: 75)
+
+            TableColumn("BSSID", value: \.bssid) { row in
+                Text(row.bssid)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .opacity(rowOpacity(row))
+            }
+            .width(min: 160, ideal: 220)
         }
+    }
+
+    // MARK: - Section Info
+
+    private struct SectionInfo {
+        enum Kind { case band(BandChartViewModel); case table }
+        let kind: Kind
+        let title: String
+        let subtitle: String
+
+        var isChart: Bool {
+            if case .band = kind { return true }
+            return false
+        }
+
+        var bandVM: BandChartViewModel? {
+            if case .band(let vm) = kind { return vm }
+            return nil
+        }
+
+        @ViewBuilder
+        var icon: some View {
+            switch kind {
+            case .band(let vm):
+                Circle()
+                    .fill(vm.band == .band24GHz ? Color.blue.opacity(0.6)
+                          : vm.band == .band5GHz ? Color.green.opacity(0.6)
+                          : Color.purple.opacity(0.6))
+                    .frame(width: 8, height: 8)
+            case .table:
+                Image(systemName: "tablecells")
+                    .font(.caption)
+            }
+        }
+    }
+
+    private var visibleSections: [SectionInfo] {
+        var sections: [SectionInfo] = []
+        for vm in viewModel.bandViewModels {
+            sections.append(SectionInfo(
+                kind: .band(vm),
+                title: vm.band.displayName,
+                subtitle: "\(vm.allSeriesData.count) networks"
+            ))
+        }
+        sections.append(SectionInfo(
+            kind: .table,
+            title: "Network Table",
+            subtitle: "\(viewModel.combinedTableRows.count) rows"
+        ))
+        return sections
+    }
+
+    // MARK: - Collapse Helpers
+
+    private func isCollapsed(_ section: SectionInfo) -> Bool {
+        switch section.kind {
+        case .band(let vm):
+            switch vm.band {
+            case .band24GHz: return is2GHzCollapsed
+            case .band5GHz:  return is5GHzCollapsed
+            case .band6GHz:  return is6GHzCollapsed
+            }
+        case .table: return isTableCollapsed
+        }
+    }
+
+    private func toggleCollapse(_ section: SectionInfo) {
+        switch section.kind {
+        case .band(let vm):
+            switch vm.band {
+            case .band24GHz: is2GHzCollapsed.toggle()
+            case .band5GHz:  is5GHzCollapsed.toggle()
+            case .band6GHz:  is6GHzCollapsed.toggle()
+            }
+        case .table: isTableCollapsed.toggle()
+        }
+    }
+
+    // MARK: - Helpers
+
+    private func rowOpacity(_ row: NetworkTableRow) -> Double {
+        if let selectedID = viewModel.selectedNetworkID {
+            return row.id == selectedID ? 1.0 : 0.25
+        }
+        return row.isFilteredOut ? Constants.filteredOutOpacity : 1.0
+    }
+
+    private var selectionBinding: Binding<Set<NetworkTableRow.ID>> {
+        Binding(
+            get: {
+                if let selected = viewModel.selectedNetworkID { return [selected] }
+                return []
+            },
+            set: { viewModel.selectedNetworkID = $0.first }
+        )
     }
 
     private var shouldShowEmptyState: Bool {
         switch viewModel.accessState {
-        case .waitingForAuthorization, .denied, .scanFailed:
-            return true
-        case .scanning, .grantedButSSIDUnavailable:
-            return false
+        case .waitingForAuthorization, .denied, .scanFailed: return true
+        case .scanning, .grantedButSSIDUnavailable: return false
         }
     }
 
     private var emptyState: some View {
         VStack(spacing: 16) {
             Spacer()
-            ProgressView()
-                .scaleEffect(1.5)
-
+            ProgressView().scaleEffect(1.5)
             switch viewModel.accessState {
             case .waitingForAuthorization:
-                Text("Waiting for Location Services permission...")
-                    .foregroundColor(.orange)
-                Button("Open System Settings") {
-                    viewModel.locationManager.openLocationPreferences()
-                }
-
+                Text("Waiting for Location Services permission...").foregroundColor(.orange)
+                Button("Open System Settings") { viewModel.locationManager.openLocationPreferences() }
             case .denied:
-                Text("Location Services permission is required to read Wi-Fi SSIDs.")
-                    .foregroundColor(.secondary)
-                Button("Open Location Preferences") {
-                    viewModel.locationManager.openLocationPreferences()
-                }
-
-            case .grantedButSSIDUnavailable:
-                Text("Permission is granted, but macOS is still not returning SSIDs.")
-                    .foregroundColor(.secondary)
-                Button("Open Location Preferences") {
-                    viewModel.locationManager.openLocationPreferences()
-                }
-
-            case .scanFailed(let message):
-                Text("Wi-Fi scan failed")
-                    .foregroundColor(.secondary)
-                Text(message)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-
+                Text("Location Services required.").foregroundColor(.secondary)
+                Button("Open Location Preferences") { viewModel.locationManager.openLocationPreferences() }
+            case .scanFailed(let msg):
+                Text("Scan failed").foregroundColor(.secondary)
+                Text(msg).font(.caption).foregroundColor(.secondary)
             case .scanning:
-                Text("Scanning for Wi-Fi networks...")
-                    .foregroundColor(.secondary)
+                Text("Scanning for Wi-Fi networks...").foregroundColor(.secondary)
+            case .grantedButSSIDUnavailable:
+                Text("SSID unavailable").foregroundColor(.secondary)
             }
-
             Spacer()
         }
-        .frame(minHeight: 300)
     }
 }

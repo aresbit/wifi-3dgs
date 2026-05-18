@@ -5,7 +5,6 @@ import SwiftUI
 final class BandChartViewModel {
     let band: ChannelBand
 
-    var filterQuery: String = ""
     var isFrozen: Bool = false
     var isExpanded: Bool = false
     var zoomMin: Double?
@@ -15,19 +14,21 @@ final class BandChartViewModel {
     private(set) var allSeriesData: [ChartSeriesData] = []
     private(set) var displayedSeriesData: [ChartSeriesData] = []
     private(set) var interfaceName: String = ""
+    private(set) var currentFilterQuery: String = ""
 
-    var hasFilter: Bool { !filterQuery.trimmingCharacters(in: .whitespaces).isEmpty }
+    var hasFilter: Bool { !currentFilterQuery.trimmingCharacters(in: .whitespaces).isEmpty }
     var isEmpty: Bool { allSeriesData.isEmpty }
 
     init(band: ChannelBand) {
         self.band = band
     }
 
-    func updateNetworks(_ networks: [WiFiNetwork], colorHasher: SSIDColorHasher) {
+    func updateNetworks(_ networks: [WiFiNetwork], colorHasher: SSIDColorHasher, filterQuery: String) {
         let dataArray = ChannelSpanCalculator.toSeriesData(networks, colorHasher: colorHasher)
         allSeriesData = dataArray
+        currentFilterQuery = filterQuery
         if !isFrozen {
-            applyFilter()
+            applyFilter(filterQuery)
         }
     }
 
@@ -35,8 +36,11 @@ final class BandChartViewModel {
         interfaceName = name
     }
 
-    func applyFilter() {
-        let needle = filterQuery.trimmingCharacters(in: .whitespaces).lowercased()
+    func applyFilter(_ filterQuery: String? = nil) {
+        if let filterQuery {
+            currentFilterQuery = filterQuery
+        }
+        let needle = currentFilterQuery.trimmingCharacters(in: .whitespaces).lowercased()
         if needle.isEmpty {
             displayedSeriesData = allSeriesData.map { s in
                 var s = s
@@ -65,8 +69,7 @@ final class BandChartViewModel {
     }
 
     func clearFilter() {
-        filterQuery = ""
-        applyFilter()
+        applyFilter("")
         showFilterPopover = false
     }
 
