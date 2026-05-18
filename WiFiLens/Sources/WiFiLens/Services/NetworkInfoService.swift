@@ -65,18 +65,17 @@ enum NetworkInfoService {
             }
         }()
         let phyMode: String? = {
-            switch iface.activePHYMode() {
-            case .mode11a:  return "802.11a"
-            case .mode11b:  return "802.11b"
-            case .mode11g:  return "802.11g"
-            case .mode11n:  return "802.11n"
-            case .mode11ac: return "802.11ac"
-            case .mode11ax: return "802.11ax"
-            #if canImport(CoreWLAN) && swift(>=5.9)
-            case .mode11be: return "802.11be"
-            #endif
-            case .modeNone: return nil
-            @unknown default: return nil
+            let mode = iface.activePHYMode()
+            switch mode.rawValue {
+            case 0: return "802.11a"
+            case 1: return "802.11b"
+            case 2: return "802.11g"
+            case 3: return "802.11n"
+            case 4: return "802.11ac"
+            case 5: return "802.11ax"
+            case 6: return "802.11be"
+            case -1: return nil
+            default: return nil
             }
         }()
         let hwMAC = iface.hardwareAddress()
