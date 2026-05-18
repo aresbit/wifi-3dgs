@@ -12,6 +12,7 @@ struct ContentView: View {
     @State private var is5GHzCollapsed = false
     @State private var is6GHzCollapsed = false
     @State private var isTableCollapsed = false
+    @State private var isNetworkInfoCollapsed = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -166,6 +167,9 @@ struct ContentView: View {
             BandChartView(viewModel: bandVM, scannerViewModel: viewModel)
                 .frame(height: height)
 
+        case .networkInfo:
+            networkInfoContent
+                .frame(height: height)
         case .table:
             bottomTable
                 .frame(height: height)
@@ -209,7 +213,7 @@ struct ContentView: View {
     // MARK: - Section Info
 
     private struct SectionInfo {
-        enum Kind { case band(BandChartViewModel); case table }
+        enum Kind { case band(BandChartViewModel); case table; case networkInfo }
         let kind: Kind
         let title: String
         let subtitle: String
@@ -233,6 +237,9 @@ struct ContentView: View {
                           : vm.band == .band5GHz ? Color.green.opacity(0.6)
                           : Color.purple.opacity(0.6))
                     .frame(width: 8, height: 8)
+            case .networkInfo:
+                Image(systemName: "wifi")
+                    .font(.caption)
             case .table:
                 Image(systemName: "tablecells")
                     .font(.caption)
@@ -249,6 +256,11 @@ struct ContentView: View {
                 subtitle: "\(vm.allSeriesData.count) networks"
             ))
         }
+        sections.append(SectionInfo(
+            kind: .networkInfo,
+            title: "Network Info",
+            subtitle: viewModel.networkInfo?.displaySSID ?? "Disconnected"
+        ))
         sections.append(SectionInfo(
             kind: .table,
             title: "Network Table",
@@ -268,6 +280,7 @@ struct ContentView: View {
             case .band6GHz:  return is6GHzCollapsed
             }
         case .table: return isTableCollapsed
+        case .networkInfo: return isNetworkInfoCollapsed
         }
     }
 
@@ -280,7 +293,46 @@ struct ContentView: View {
             case .band6GHz:  is6GHzCollapsed.toggle()
             }
         case .table: isTableCollapsed.toggle()
+        case .networkInfo: isNetworkInfoCollapsed.toggle()
         }
+    }
+
+    // MARK: - Network Info
+
+    private var networkInfoContent: some View {
+        guard let info = viewModel.networkInfo else {
+            return AnyView(Text("No Wi-Fi connection").foregroundColor(.secondary))
+        }
+        let pairs: [(String, String)] = [
+            ("SSID", info.displaySSID),
+            ("BSSID", info.displayBSSID),
+            ("Channel", info.displayChannel),
+            ("RSSI", info.displayRSSI),
+            ("Tx Rate", info.displayTxRate),
+            ("PHY Mode", info.displayPhyMode),
+            ("Security", info.displaySecurity),
+            ("IP Address", info.displayIP),
+            ("Subnet Mask", info.displaySubnet),
+            ("Router", info.displayRouter),
+            ("DNS", info.displayDNS),
+            ("MAC", info.displayMAC),
+        ]
+        return AnyView(
+            ScrollView {
+                LazyVGrid(columns: [GridItem(.fixed(120), alignment: .trailing), GridItem(.flexible(), alignment: .leading)], spacing: 4) {
+                    ForEach(pairs, id: \.0) { label, value in
+                        Text(label)
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+                        Text(value)
+                            .font(.caption)
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 8)
+            }
+        )
     }
 
     // MARK: - Helpers

@@ -303,6 +303,9 @@
         }
       }
     },
+    "No Wi-Fi connection" : {
+
+    },
     "On macOS 14 Sonoma and Later, Location Services permission is required to get Wi-Fi SSIDs.\nPlease enable Location Services in System Preferences > Security & Privacy > Privacy > Location Services." : {
       "localizations" : {
         "zh-Hans" : {
