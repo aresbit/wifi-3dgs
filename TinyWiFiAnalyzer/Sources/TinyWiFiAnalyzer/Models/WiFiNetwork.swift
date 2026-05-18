@@ -1,4 +1,5 @@
 import CoreWLAN
+import Foundation
 
 struct WiFiNetwork: Sendable, Identifiable {
     var id: String { "\(bssid)-\(channel.channelNumber)-\(channel.band.rawValue)" }
@@ -7,6 +8,7 @@ struct WiFiNetwork: Sendable, Identifiable {
     let rssi: Int
     let channel: WiFiChannel
     let isIBSS: Bool
+    let ieData: Data?
 
     init(from cwNetwork: CWNetwork) {
         ssid = cwNetwork.ssid
@@ -14,5 +16,6 @@ struct WiFiNetwork: Sendable, Identifiable {
         rssi = cwNetwork.rssiValue
         channel = WiFiChannel(from: cwNetwork.wlanChannel!)
         isIBSS = cwNetwork.ibss
+        ieData = cwNetwork.informationElementData
     }
 }

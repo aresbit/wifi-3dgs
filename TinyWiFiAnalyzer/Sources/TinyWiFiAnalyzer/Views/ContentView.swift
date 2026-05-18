@@ -196,8 +196,15 @@ struct ContentView: View {
         case "bandLabel":  cmp = a.bandLabel.localizedCaseInsensitiveCompare(b.bandLabel)
         case "channel":    cmp = a.channel < b.channel ? .orderedAscending : a.channel > b.channel ? .orderedDescending : .orderedSame
         case "rssi":       cmp = a.rssi > b.rssi ? .orderedAscending : a.rssi < b.rssi ? .orderedDescending : .orderedSame
-        case "bssid":      cmp = a.bssid.localizedCaseInsensitiveCompare(b.bssid)
-        default:           cmp = .orderedSame
+        case "bssid":         cmp = a.bssid.localizedCaseInsensitiveCompare(b.bssid)
+        case "phyMode":       cmp = a.phyMode.localizedCaseInsensitiveCompare(b.phyMode)
+        case "channelWidth":  cmp = Int(a.channelWidth) ?? 0 < Int(b.channelWidth) ?? 0 ? .orderedAscending : Int(a.channelWidth) ?? 0 > Int(b.channelWidth) ?? 0 ? .orderedDescending : .orderedSame
+        case "supportsK":     cmp = a.supportsK == b.supportsK ? .orderedSame : a.supportsK ? .orderedDescending : .orderedAscending
+        case "supportsR":     cmp = a.supportsR == b.supportsR ? .orderedSame : a.supportsR ? .orderedDescending : .orderedAscending
+        case "supportsV":     cmp = a.supportsV == b.supportsV ? .orderedSame : a.supportsV ? .orderedDescending : .orderedAscending
+        case "supportsWPA3":  cmp = a.supportsWPA3 == b.supportsWPA3 ? .orderedSame : a.supportsWPA3 ? .orderedDescending : .orderedAscending
+        case "isHiddenSSID":  cmp = a.isHiddenSSID == b.isHiddenSSID ? .orderedSame : a.isHiddenSSID ? .orderedDescending : .orderedAscending
+        default:              cmp = .orderedSame
         }
         return ascending ? cmp : (cmp == .orderedAscending ? .orderedDescending : cmp == .orderedDescending ? .orderedAscending : .orderedSame)
     }

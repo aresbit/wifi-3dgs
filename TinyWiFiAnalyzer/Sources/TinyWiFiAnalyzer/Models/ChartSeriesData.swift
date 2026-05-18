@@ -12,6 +12,13 @@ struct ChartSeriesData: Identifiable {
     let rssi: Int
     var color: Color = .gray
     var isFilteredOut: Bool = false
+    var phyMode: String = ""
+    var channelWidth: String = ""
+    var supportsK: Bool = false
+    var supportsR: Bool = false
+    var supportsV: Bool = false
+    var supportsWPA3: Bool = false
+    var isHiddenSSID: Bool = false
 
     var displaySSID: String { ssid.isEmpty ? "n/a" : ssid }
 

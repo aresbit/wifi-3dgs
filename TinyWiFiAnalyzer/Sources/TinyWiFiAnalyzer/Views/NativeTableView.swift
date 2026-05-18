@@ -33,11 +33,18 @@ struct NativeTableView: NSViewRepresentable {
         tableView.addTableColumn(dotColumn)
 
         // Data columns with sort support
-        addColumn(to: tableView, id: "SSID", title: "SSID", width: 180, sortKey: "ssid", ascending: true)
+        addColumn(to: tableView, id: "SSID", title: "SSID", width: 160, sortKey: "ssid", ascending: true)
+        addColumn(to: tableView, id: "Hidden", title: "H", width: 20, sortKey: "isHiddenSSID", ascending: false)
         addColumn(to: tableView, id: "Band", title: "Band", width: 80, sortKey: "bandLabel", ascending: true)
         addColumn(to: tableView, id: "Ch", title: "Ch", width: 50, sortKey: "channel", ascending: true)
         addColumn(to: tableView, id: "RSSI", title: "RSSI", width: 75, sortKey: "rssi", ascending: false)
-        addColumn(to: tableView, id: "BSSID", title: "BSSID", width: 180, sortKey: "bssid", ascending: true)
+        addColumn(to: tableView, id: "BSSID", title: "BSSID", width: 150, sortKey: "bssid", ascending: true)
+        addColumn(to: tableView, id: "PHY", title: "PHY", width: 36, sortKey: "phyMode", ascending: true)
+        addColumn(to: tableView, id: "BW", title: "BW", width: 40, sortKey: "channelWidth", ascending: false)
+        addColumn(to: tableView, id: "k", title: "k", width: 28, sortKey: "supportsK", ascending: false)
+        addColumn(to: tableView, id: "r", title: "r", width: 28, sortKey: "supportsR", ascending: false)
+        addColumn(to: tableView, id: "v", title: "v", width: 28, sortKey: "supportsV", ascending: false)
+        addColumn(to: tableView, id: "WPA3", title: "WPA3", width: 50, sortKey: "supportsWPA3", ascending: false)
 
         // Apply stored sort descriptors
         let storedColumns = tableView.tableColumns
@@ -132,11 +139,18 @@ struct NativeTableView: NSViewRepresentable {
             textField.maximumNumberOfLines = 1
 
             switch columnID {
+            case "Hidden": return hiddenIndicator(network.isHiddenSSID, opacity: opacity)
             case "SSID":  textField.stringValue = network.ssid
             case "Band":  textField.stringValue = network.bandLabel
             case "Ch":    textField.stringValue = String(network.channel)
             case "RSSI":  textField.stringValue = "\(network.rssi) dBm"
             case "BSSID": textField.stringValue = network.bssid
+            case "PHY":   textField.stringValue = network.phyMode; textField.alignment = .center; textField.font = NSFont.systemFont(ofSize: 10)
+            case "BW":    textField.stringValue = network.channelWidth; textField.alignment = .center; textField.font = NSFont.systemFont(ofSize: 10)
+            case "k":     textField.stringValue = network.supportsK ? "✓" : ""; textField.alignment = .center; textField.font = NSFont.systemFont(ofSize: 10)
+            case "r":     textField.stringValue = network.supportsR ? "✓" : ""; textField.alignment = .center; textField.font = NSFont.systemFont(ofSize: 10)
+            case "v":     textField.stringValue = network.supportsV ? "✓" : ""; textField.alignment = .center; textField.font = NSFont.systemFont(ofSize: 10)
+            case "WPA3":  textField.stringValue = network.supportsWPA3 ? "✓" : ""; textField.alignment = .center; textField.font = NSFont.systemFont(ofSize: 10)
             default: break
             }
             return textField
@@ -156,6 +170,15 @@ struct NativeTableView: NSViewRepresentable {
             DispatchQueue.main.async {
                 self.selectedID.wrappedValue = newID
             }
+        }
+
+        private func hiddenIndicator(_ hidden: Bool, opacity: Double) -> NSView {
+            guard hidden else { return NSView() }
+            let label = NSTextField(labelWithString: "H")
+            label.font = NSFont.systemFont(ofSize: 9, weight: .medium)
+            label.textColor = NSColor.secondaryLabelColor.withAlphaComponent(opacity)
+            label.alignment = .center
+            return label
         }
 
         private func rowOpacity(_ row: NetworkTableRow) -> Double {

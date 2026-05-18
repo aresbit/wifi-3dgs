@@ -111,6 +111,8 @@ enum ChannelSpanCalculator {
             // Stable ID across scans: caller guarantees no duplicate (bssid, channel, band) tuples
             let stableID = "\(nw.bssid)-\(reportedChannel)-\(band.rawValue)"
 
+            let ie = nw.ieData.map { IEParser.parse(data: $0) }
+
             series.append(ChartSeriesData(
                 id: stableID,
                 ssid: nw.ssid ?? "n/a",
@@ -120,9 +122,30 @@ enum ChannelSpanCalculator {
                 apex: apex,
                 right: right,
                 rssi: nw.rssi,
-                color: colorHasher.color(for: nw.ssid)
+                color: colorHasher.color(for: nw.ssid),
+                phyMode: ie.map { phyLabel($0) } ?? "",
+                channelWidth: ie.map { widthLabel($0) } ?? "",
+                supportsK: ie?.supports80211k ?? false,
+                supportsR: ie?.supports80211r ?? false,
+                supportsV: ie?.supports80211v ?? false,
+                supportsWPA3: ie?.supportsWPA3 ?? false,
+                isHiddenSSID: ie?.isHiddenSSID ?? false
             ))
         }
         return series
+    }
+
+    private static func phyLabel(_ ie: IEData) -> String {
+        if ie.heSupported { return "ax" }
+        if ie.vhtSupported { return "ac" }
+        if ie.htSupported { return "n" }
+        return ""
+    }
+
+    private static func widthLabel(_ ie: IEData) -> String {
+        if ie.supports160MHz { return "160" }
+        if ie.supports80MHz { return "80" }
+        if ie.supports40MHz { return "40" }
+        return ""
     }
 }

@@ -18,6 +18,13 @@ struct NetworkTableRow: Identifiable, Hashable {
     let bssid: String
     let color: Color
     let isFilteredOut: Bool
+    let phyMode: String
+    let channelWidth: String
+    let supportsK: Bool
+    let supportsR: Bool
+    let supportsV: Bool
+    let supportsWPA3: Bool
+    let isHiddenSSID: Bool
 }
 
 @MainActor
@@ -57,7 +64,14 @@ final class ScannerViewModel {
                     ssid: series.displaySSID,
                     bssid: series.bssid,
                     color: series.color,
-                    isFilteredOut: series.isFilteredOut
+                    isFilteredOut: series.isFilteredOut,
+                    phyMode: series.phyMode,
+                    channelWidth: series.channelWidth,
+                    supportsK: series.supportsK,
+                    supportsR: series.supportsR,
+                    supportsV: series.supportsV,
+                    supportsWPA3: series.supportsWPA3,
+                    isHiddenSSID: series.isHiddenSSID
                 )
             }
         }
