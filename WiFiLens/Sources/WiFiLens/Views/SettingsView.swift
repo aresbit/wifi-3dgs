@@ -6,6 +6,8 @@ struct SettingsView: View {
 
     @State private var autoCheck: Bool
     @AppStorage("scanIntervalSeconds") private var scanInterval: Int = 3
+    @AppStorage("mcpEnabled") private var mcpEnabled: Bool = false
+    @AppStorage("mcpPort") private var mcpPort: Int = 19840
 
     init(updater: SparkleUpdater) {
         self.updater = updater
@@ -16,10 +18,12 @@ struct SettingsView: View {
         TabView {
             generalTab
                 .tabItem { Label("General", systemImage: "gearshape") }
+            mcpTab
+                .tabItem { Label("MCP", systemImage: "apple.terminal") }
             updatesTab
                 .tabItem { Label("Updates", systemImage: "arrow.down.circle") }
         }
-        .frame(width: 420, height: 260)
+        .frame(width: 420, height: 300)
     }
 
     // MARK: - General
@@ -47,6 +51,42 @@ struct SettingsView: View {
                 }
                 .pickerStyle(.menu)
                 .frame(maxWidth: 200)
+            }
+        }
+        .formStyle(.grouped)
+    }
+
+    // MARK: - MCP
+
+    private var mcpTab: some View {
+        Form {
+            Section {
+                Toggle("Enable MCP server", isOn: $mcpEnabled)
+                Text("Expose current Wi-Fi scan data as a local HTTP API for AI tools (Claude Desktop, etc.) to query via MCP.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Section("Connection") {
+                HStack {
+                    Text("Port:")
+                    TextField("", value: $mcpPort, format: .number)
+                        .frame(width: 80)
+                    Stepper("", value: $mcpPort, in: 1024...65535)
+                        .labelsHidden()
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Claude Desktop config")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text(#"{"mcpServers":{"wifi-lens":{"command":"WiFiLensMCP","args":["\#(mcpPort)"]}}}"#)
+                        .font(.system(size: 10, design: .monospaced))
+                        .foregroundColor(.secondary)
+                        .textSelection(.enabled)
+                }
+                .padding(.top, 4)
             }
         }
         .formStyle(.grouped)

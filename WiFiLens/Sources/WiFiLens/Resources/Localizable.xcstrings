@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "{\"mcpServers\":{\"wifi-lens\":{\"command\":\"WiFiLensMCP\",\"args\":[\"%@\"]}}}" : {
+
+    },
     "%@" : {
 
     },
@@ -56,6 +59,17 @@
         }
       }
     },
+    "2.4 GHz" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2.4 GHz"
+          }
+        }
+      }
+    },
     "3 seconds" : {
       "localizations" : {
         "zh-Hans" : {
@@ -66,12 +80,34 @@
         }
       }
     },
+    "5 GHz" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5 GHz"
+          }
+        }
+      }
+    },
     "5 seconds" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "5 秒"
+          }
+        }
+      }
+    },
+    "6 GHz" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6 GHz"
           }
         }
       }
@@ -140,6 +176,16 @@
         }
       }
     },
+    "Claude Desktop config" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Desktop 配置"
+          }
+        }
+      }
+    },
     "Clear" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -161,6 +207,17 @@
         }
       }
     },
+    "Connection" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "连接"
+          }
+        }
+      }
+    },
     "Denied" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -172,6 +229,28 @@
         }
       }
     },
+    "Disconnected" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未连接"
+          }
+        }
+      }
+    },
+    "Enable MCP server" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启用 MCP 服务"
+          }
+        }
+      }
+    },
     "Export" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -179,6 +258,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "导出"
+          }
+        }
+      }
+    },
+    "Expose current Wi-Fi scan data as a local HTTP API for AI tools (Claude Desktop, etc.) to query via MCP." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将当前 Wi-Fi 扫描数据暴露为本地 HTTP API，供 AI 工具（Claude Desktop 等）通过 MCP 查询。"
           }
         }
       }
@@ -302,6 +391,28 @@
         }
       }
     },
+    "MCP" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MCP"
+          }
+        }
+      }
+    },
+    "Network Info" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "网络信息"
+          }
+        }
+      }
+    },
     "Network Table" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -406,6 +517,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已授权，但 macOS 仍未返回 SSID。"
+          }
+        }
+      }
+    },
+    "Port:" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "端口："
           }
         }
       }

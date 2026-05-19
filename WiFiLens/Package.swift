@@ -7,10 +7,12 @@ let package = Package(
     defaultLocalization: "en",
     platforms: [.macOS(.v14)],
     products: [
-        .executable(name: "WiFiLens", targets: ["WiFiLens"])
+        .executable(name: "WiFiLens", targets: ["WiFiLens"]),
+        .executable(name: "WiFiLensMCP", targets: ["WiFiLensMCP"]),
     ],
     dependencies: [
         .package(url: "https://github.com/sparkle-project/Sparkle", from: "2.8.0"),
+        .package(url: "https://github.com/modelcontextprotocol/swift-sdk.git", from: "0.11.0"),
     ],
     targets: [
         .executableTarget(
@@ -19,6 +21,12 @@ let package = Package(
                 .product(name: "Sparkle", package: "Sparkle"),
             ],
             resources: [.process("Resources")]
+        ),
+        .executableTarget(
+            name: "WiFiLensMCP",
+            dependencies: [
+                .product(name: "MCP", package: "swift-sdk"),
+            ]
         ),
         .testTarget(
             name: "WiFiLensTests",

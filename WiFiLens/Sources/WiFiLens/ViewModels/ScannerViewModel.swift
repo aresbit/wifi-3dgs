@@ -40,8 +40,9 @@ final class ScannerViewModel {
     var locationManager = LocationPermissionManager()
     let colorHasher = SSIDColorHasher()
     let signalHistory = SignalHistoryStore()
+    let mcpServer = MCPServer()
     var hiddenBSSIDs: Set<String> = []
-    private var lastNetworks: [WiFiNetwork] = []  // cached for toggle rebuild
+    private(set) var lastNetworks: [WiFiNetwork] = []  // cached for toggle rebuild + MCP
 
     var band24 = BandChartViewModel(band: .band24GHz)
     var band5 = BandChartViewModel(band: .band5GHz)

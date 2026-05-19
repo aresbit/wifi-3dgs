@@ -11,6 +11,8 @@ extension Notification.Name {
 struct WiFiLensApp: App {
     @State private var viewModel = ScannerViewModel()
     @State private var sparkleUpdater = SparkleUpdater()
+    @AppStorage("mcpEnabled") private var mcpEnabled: Bool = false
+    @AppStorage("mcpPort") private var mcpPort: Int = 19840
 
     var body: some Scene {
         WindowGroup {
@@ -33,6 +35,12 @@ struct WiFiLensApp: App {
                 }
         }
         .windowResizability(.contentSize)
+        .onChange(of: mcpEnabled) { _, enabled in
+            updateMCPServer()
+        }
+        .onChange(of: mcpPort) { _, _ in
+            if mcpEnabled { updateMCPServer() }
+        }
         .commands {
             CommandGroup(after: .toolbar) {
                 Menu("Export") {
@@ -67,6 +75,18 @@ struct WiFiLensApp: App {
 
         Settings {
             SettingsView(updater: sparkleUpdater)
+        }
+    }
+
+    @MainActor
+    private func updateMCPServer() {
+        viewModel.mcpServer.stop()
+        guard mcpEnabled else { return }
+        viewModel.mcpServer.port = UInt16(mcpPort)
+        do {
+            try viewModel.mcpServer.start()
+        } catch {
+            print("[WiFiLens] MCP server failed to start: \(error)")
         }
     }
 

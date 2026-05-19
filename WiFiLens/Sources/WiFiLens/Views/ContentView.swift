@@ -21,7 +21,10 @@ struct ContentView: View {
             dashboardContent
         }
         .frame(minWidth: 700, idealWidth: 1000, minHeight: 600)
-        .task { await viewModel.start() }
+        .task {
+            viewModel.mcpServer.dataProvider = { [weak viewModel] in viewModel?.lastNetworks ?? [] }
+            await viewModel.start()
+        }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
                 Task { await viewModel.handleSceneDidBecomeActive() }
@@ -283,18 +286,18 @@ struct ContentView: View {
             sections.append(SectionInfo(
                 kind: .band(vm),
                 title: vm.band.displayName,
-                subtitle: "\(vm.allSeriesData.count) networks"
+                subtitle: String(localized: "\(vm.allSeriesData.count) networks")
             ))
         }
         sections.append(SectionInfo(
             kind: .networkInfo,
-            title: "Network Info",
-            subtitle: viewModel.networkInfo?.displaySSID ?? "Disconnected"
+            title: String(localized: "Network Info"),
+            subtitle: viewModel.networkInfo?.displaySSID ?? String(localized: "Disconnected")
         ))
         sections.append(SectionInfo(
             kind: .table,
-            title: "Network Table",
-            subtitle: "\(viewModel.combinedTableRows.count) rows"
+            title: String(localized: "Network Table"),
+            subtitle: String(localized: "\(viewModel.combinedTableRows.count) rows")
         ))
         return sections
     }

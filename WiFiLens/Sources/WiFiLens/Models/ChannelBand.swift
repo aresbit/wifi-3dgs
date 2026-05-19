@@ -5,9 +5,9 @@ enum ChannelBand: Int, Sendable, CaseIterable {
 
     var displayName: String {
         switch self {
-        case .band24GHz: "2.4 GHz"
-        case .band5GHz: "5 GHz"
-        case .band6GHz: "6 GHz"
+        case .band24GHz: String(localized: "2.4 GHz")
+        case .band5GHz: String(localized: "5 GHz")
+        case .band6GHz: String(localized: "6 GHz")
         }
     }
 
