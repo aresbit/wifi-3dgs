@@ -1,8 +1,15 @@
 import SwiftUI
 
 enum ChannelViewMode: String, CaseIterable {
-    case simple = "Simple"
-    case table  = "Professional"
+    case simple
+    case table
+
+    var displayName: String {
+        switch self {
+        case .simple: String(localized: "Simple")
+        case .table:  String(localized: "Professional")
+        }
+    }
 }
 
 struct ChannelQualityView: View {
@@ -15,8 +22,11 @@ struct ChannelQualityView: View {
     enum SortKey: String { case channel, bandDisplay, qualityScore, qualityLevel, apCount, coChannelCount, adjacentCount, overlapLevel, strongestNeighborRSSI, interferenceScore }
 
     private var displayed: [ChannelQuality] {
-        let base = mode == .simple ? channels.filter(\.showInSimpleView) : channels
-        return base.sorted { a, b in
+        if mode == .simple {
+            return channels.filter(\.showInSimpleView)
+        }
+
+        return channels.sorted { a, b in
             let cmp: Bool = switch sortKey {
             case .channel:              a.channel < b.channel
             case .bandDisplay:          a.bandDisplay < b.bandDisplay
@@ -39,7 +49,7 @@ struct ChannelQualityView: View {
             HStack {
                 Picker("", selection: $mode) {
                     ForEach(ChannelViewMode.allCases, id: \.self) { m in
-                        Text(m.rawValue).tag(m)
+                        Text(m.displayName).tag(m)
                     }
                 }
                 .pickerStyle(.segmented)
@@ -54,7 +64,7 @@ struct ChannelQualityView: View {
                 Image(systemName: "antenna.radiowaves.left.and.right.slash")
                     .font(.largeTitle)
                     .foregroundColor(.secondary)
-                Text("No channel data available")
+                Text(String(localized: "No channel data available"))
                     .foregroundColor(.secondary)
                 Spacer()
             } else if mode == .simple {
@@ -84,17 +94,17 @@ struct ChannelQualityView: View {
         ScrollView {
             Grid(horizontalSpacing: 0, verticalSpacing: 0) {
                 GridRow {
-                    sortHeader("CH", .channel)
-                    sortHeader("Band", .bandDisplay)
-                    sortHeader("Score", .qualityScore)
-                    sortHeader("Level", .qualityLevel)
-                    sortHeader("APs", .apCount)
-                    sortHeader("Co-Ch", .coChannelCount)
-                    sortHeader("Adj", .adjacentCount)
-                    sortHeader("Overlap", .overlapLevel)
-                    sortHeader("RSSI", .strongestNeighborRSSI)
-                    sortHeader("Intf", .interferenceScore)
-                    tableHeader("Rec")
+                    sortHeader(String(localized: "CH"), .channel)
+                    sortHeader(String(localized: "Band"), .bandDisplay)
+                    sortHeader(String(localized: "Score"), .qualityScore)
+                    sortHeader(String(localized: "Level"), .qualityLevel)
+                    sortHeader(String(localized: "APs"), .apCount)
+                    sortHeader(String(localized: "Co-Ch"), .coChannelCount)
+                    sortHeader(String(localized: "Adj"), .adjacentCount)
+                    sortHeader(String(localized: "Overlap"), .overlapLevel)
+                    sortHeader(String(localized: "RSSI"), .strongestNeighborRSSI)
+                    sortHeader(String(localized: "Intf"), .interferenceScore)
+                    tableHeader(String(localized: "Rec"))
                 }
                 .background(.bar)
 
@@ -104,11 +114,11 @@ struct ChannelQualityView: View {
                         cell("\(ch.channel)", bold: ch.isCurrentChannel, color: ch.isCurrentChannel ? .accentColor : .primary)
                         cell(ch.bandDisplay)
                         cell("\(ch.qualityScore)", color: Color(hex: ch.qualityLevel.color))
-                        cell(ch.qualityLevel.rawValue, color: Color(hex: ch.qualityLevel.color))
+                        cell(ch.qualityLevel.displayName, color: Color(hex: ch.qualityLevel.color))
                         cell("\(ch.apCount)")
                         cell("\(ch.coChannelCount)")
                         cell("\(ch.adjacentCount)")
-                        cell(ch.overlapLevel.rawValue)
+                        cell(ch.overlapLevel.displayName)
                         cell("\(ch.strongestNeighborRSSI)")
                         cell("\(ch.interferenceScore)")
                         cell(ch.isRecommended ? "★" : ch.isCurrentChannel ? "●" : "")
@@ -190,11 +200,11 @@ private struct ChannelCard: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 6) {
-                    Text(channel.qualityLevel.rawValue)
+                    Text(channel.qualityLevel.displayName)
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(Color(hex: channel.qualityLevel.color))
-                    if channel.isRecommended { badge("★ Recommended", color: "#FF9F0A") }
-                    if channel.isCurrentChannel { badge("● Current", color: "#007AFF") }
+                    if channel.isRecommended { badge(String(localized: "★ Recommended"), color: "#FF9F0A") }
+                    if channel.isCurrentChannel { badge(String(localized: "● Current"), color: "#007AFF") }
                 }
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
@@ -214,16 +224,16 @@ private struct ChannelCard: View {
 
             VStack(alignment: .trailing, spacing: 4) {
                 HStack(spacing: 4) {
-                    Text("Co:").font(.system(size: 9)).foregroundColor(.secondary)
+                    Text(String(localized: "Co:")).font(.system(size: 9)).foregroundColor(.secondary)
                     Text("\(channel.coChannelCount)").font(.system(size: 12, weight: .medium))
-                    Text("· Adj:").font(.system(size: 9)).foregroundColor(.secondary)
+                    Text(String(localized: "· Adj:")).font(.system(size: 9)).foregroundColor(.secondary)
                     Text("\(channel.adjacentCount)").font(.system(size: 12, weight: .medium))
                 }
                 HStack(spacing: 4) {
                     Image(systemName: "wave.3.right").font(.system(size: 9)).foregroundColor(.secondary)
                     Text("\(channel.strongestNeighborRSSI) dBm").font(.system(size: 11)).foregroundColor(.secondary)
                 }
-                Text(channel.overlapLevel.rawValue)
+                Text(channel.overlapLevel.displayName)
                     .font(.system(size: 10))
                     .foregroundColor(overlapColor(channel.overlapLevel))
                     .padding(.horizontal, 6).padding(.vertical, 2)

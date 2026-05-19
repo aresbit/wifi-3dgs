@@ -1,6 +1,66 @@
 import SwiftUI
 import Sparkle
 
+private struct AppRootView: View {
+    @Bindable var viewModel: ScannerViewModel
+    @Binding var sidebarVisibility: NavigationSplitViewVisibility
+    @Binding var selectedPage: SidebarPage
+    @Binding var showCrashLog: Bool
+    @Binding var crashLogText: String
+    let updateMCPServer: @MainActor () -> Void
+
+    @Environment(\.scenePhase) private var scenePhase
+
+    var body: some View {
+        NavigationSplitView(columnVisibility: $sidebarVisibility) {
+            SidebarView(selectedPage: $selectedPage)
+                .navigationSplitViewColumnWidth(min: 160, ideal: 180)
+        } detail: {
+            Group {
+                switch selectedPage {
+                case .spectrum:
+                    ContentView(viewModel: viewModel)
+                        .alert("Location Services are disabled", isPresented: $viewModel.locationManager.showDeniedAlert) {
+                            Button("Open Preferences") {
+                                viewModel.locationManager.openLocationPreferences()
+                            }
+                            Button("Ignore", role: .cancel) {}
+                            Button("Quit", role: .destructive) {
+                                viewModel.locationManager.terminateApp()
+                            }
+                        } message: {
+                            Text("On macOS 14 Sonoma and Later, Location Services permission is required to get Wi-Fi SSIDs.\nPlease enable Location Services in System Preferences > Security & Privacy > Privacy > Location Services.")
+                        }
+                        .onReceive(NotificationCenter.default.publisher(for: .freezeAllBands)) { _ in
+                            for vm in viewModel.bandViewModels {
+                                vm.toggleFreeze()
+                            }
+                        }
+                case .channels:
+                    ChannelQualityView(channels: viewModel.channelQualities)
+                case .interfaces:
+                    InterfacesView(interfaces: viewModel.networkInfo, scannerViewModel: viewModel)
+                }
+            }
+            .alert(String(localized: "Previous Crash Detected"), isPresented: $showCrashLog) {
+                Button(String(localized: "Dismiss"), role: .cancel) {}
+            } message: {
+                ScrollView { Text(crashLogText).font(.caption.monospaced()).textSelection(.enabled) }
+                    .frame(maxHeight: 200)
+            }
+        }
+        .task {
+            await viewModel.start()
+            updateMCPServer()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                Task { await viewModel.handleSceneDidBecomeActive() }
+            }
+        }
+    }
+}
+
 extension Notification.Name {
     static let freezeAllBands = Notification.Name("freezeAllBands")
     static let exportBandAsPNG = Notification.Name("exportBandAsPNG")
@@ -31,43 +91,14 @@ struct WiFiLensApp: App {
 
     var body: some Scene {
         WindowGroup {
-            NavigationSplitView(columnVisibility: $sidebarVisibility) {
-                SidebarView(selectedPage: $selectedPage)
-                    .navigationSplitViewColumnWidth(min: 160, ideal: 180)
-            } detail: {
-                Group {
-                switch selectedPage {
-                case .spectrum:
-                    ContentView(viewModel: viewModel)
-                        .alert("Location Services are disabled", isPresented: $viewModel.locationManager.showDeniedAlert) {
-                            Button("Open Preferences") {
-                                viewModel.locationManager.openLocationPreferences()
-                            }
-                            Button("Ignore", role: .cancel) {}
-                            Button("Quit", role: .destructive) {
-                                viewModel.locationManager.terminateApp()
-                            }
-                        } message: {
-                            Text("On macOS 14 Sonoma and Later, Location Services permission is required to get Wi-Fi SSIDs.\nPlease enable Location Services in System Preferences > Security & Privacy > Privacy > Location Services.")
-                        }
-                        .onReceive(NotificationCenter.default.publisher(for: .freezeAllBands)) { _ in
-                            for vm in viewModel.bandViewModels {
-                                vm.toggleFreeze()
-                            }
-                        }
-                case .channels:
-                    ChannelQualityView(channels: viewModel.channelQualities)
-                case .interfaces:
-                    InterfacesView(interfaces: viewModel.networkInfo, scannerViewModel: viewModel)
-                }
-                }
-                .alert("Previous Crash Detected", isPresented: $showCrashLog) {
-                    Button("Dismiss", role: .cancel) {}
-                } message: {
-                    ScrollView { Text(crashLogText).font(.caption.monospaced()).textSelection(.enabled) }
-                        .frame(maxHeight: 200)
-                }
-            }
+            AppRootView(
+                viewModel: viewModel,
+                sidebarVisibility: $sidebarVisibility,
+                selectedPage: $selectedPage,
+                showCrashLog: $showCrashLog,
+                crashLogText: $crashLogText,
+                updateMCPServer: updateMCPServer
+            )
         }
         .windowResizability(.contentSize)
         .onChange(of: mcpEnabled) { _, enabled in
@@ -81,10 +112,10 @@ struct WiFiLensApp: App {
                 Menu("Export") {
                     ForEach(viewModel.bandViewModels, id: \.band.id) { vm in
                         Menu(vm.band.displayName) {
-                            Button("PNG") {
+                            Button(String(localized: "PNG")) {
                                 exportPNG(for: vm)
                             }
-                            Button("CSV") {
+                            Button(String(localized: "CSV")) {
                                 exportCSV(for: vm)
                             }
                         }

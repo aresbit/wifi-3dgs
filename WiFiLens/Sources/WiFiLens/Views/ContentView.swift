@@ -4,7 +4,6 @@ private let headerHeight: CGFloat = 28
 
 struct ContentView: View {
     @Bindable var viewModel: ScannerViewModel
-    @Environment(\.scenePhase) private var scenePhase
 
     @State private var sortOrder: [NSSortDescriptor] = [NSSortDescriptor(key: "ssid", ascending: true)]
     @State private var is2GHzCollapsed = false
@@ -16,18 +15,8 @@ struct ContentView: View {
             dashboardContent
         }
         .frame(minWidth: 700, idealWidth: 1000, minHeight: 600)
-        .task {
-            viewModel.mcpServer.dataProvider = { [weak viewModel] in viewModel?.lastNetworks ?? [] }
-            await viewModel.start()
-        }
-        .onChange(of: scenePhase) { _, newPhase in
-            if newPhase == .active {
-                Task { await viewModel.handleSceneDidBecomeActive() }
-            }
-        }
         .onChange(of: viewModel.hiddenBands) { _, _ in viewModel.applyGlobalFilterToBands() }
         .onChange(of: viewModel.hideHiddenSSIDs) { _, _ in viewModel.applyGlobalFilterToBands() }
-        .onDisappear { viewModel.stop() }
     }
 
     // MARK: - Dashboard Content
@@ -289,7 +278,7 @@ struct ContentView: View {
             sections.append(SectionInfo(
                 kind: .band(vm),
                 title: vm.band.displayName,
-                subtitle: String(localized: "\(vm.allSeriesData.count) networks")
+                subtitle: String(localized: "\(vm.renderedNetworkCount) networks")
             ))
         }
         sections.append(SectionInfo(

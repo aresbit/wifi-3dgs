@@ -19,9 +19,9 @@ struct NetworkInterfaceInfo {
     let phyMode: String?
     let security: String
 
-    var displayMAC: String { hardwareMAC ?? "Unknown" }
+    var displayMAC: String { hardwareMAC ?? String(localized: "Unknown") }
     var displaySSID: String { ssid ?? "n/a" }
-    var displayBSSID: String { bssid ?? "Unknown" }
+    var displayBSSID: String { bssid ?? String(localized: "Unknown") }
     var displayChannel: String { channel.map { "\($0)" } ?? "—" }
     var displayRSSI: String { rssi.map { "\($0) dBm" } ?? "—" }
     var displayTxRate: String { txRate.map { "\(Int($0)) Mbps" } ?? "—" }
@@ -160,39 +160,8 @@ enum NetworkInfoService {
         let channel = iface.wlanChannel()?.channelNumber
         let rssi = iface.rssiValue()
         let txRate = iface.transmitRate()
-        let security: String = {
-            switch iface.security().rawValue {
-            case 0: return "None"
-            case 1: return "WEP"
-            case 2: return "WPA Personal"
-            case 3: return "WPA/WPA2 Personal"
-            case 4: return "WPA2 Personal"
-            case 5: return "Personal"
-            case 6: return "Dynamic WEP"
-            case 7: return "WPA Enterprise"
-            case 8: return "WPA/WPA2 Enterprise"
-            case 9: return "WPA2 Enterprise"
-            case 10: return "Enterprise"
-            case 13: return "WPA3 Personal"
-            case 14: return "WPA3 Enterprise"
-            case 15: return "WPA3 Transition"
-            default: return "—"
-            }
-        }()
-        let phyMode: String? = {
-            let mode = iface.activePHYMode()
-            switch mode.rawValue {
-            case 0: return "802.11a"
-            case 1: return "802.11b"
-            case 2: return "802.11g"
-            case 3: return "802.11n"
-            case 4: return "802.11ac"
-            case 5: return "802.11ax"
-            case 6: return "802.11be"
-            case -1: return nil
-            default: return nil
-            }
-        }()
+        let security: String = securityLabel(iface)
+        let phyMode: String? = phyModeLabel(iface)
         let hwMAC = iface.hardwareAddress()
 
         // IPv4 / Router from SystemConfiguration
@@ -278,39 +247,41 @@ enum NetworkInfoService {
         CWWiFiClient.shared().interface()?.hardwareAddress()
     }
 
+    private static func securityLabel(_ iface: CWInterface) -> String {
+        switch iface.security().rawValue {
+        case 0: return String(localized: "None")
+        case 1: return String(localized: "WEP")
+        case 2: return String(localized: "WPA Personal")
+        case 3: return String(localized: "WPA/WPA2 Personal")
+        case 4: return String(localized: "WPA2 Personal")
+        case 5: return String(localized: "Personal")
+        case 6: return String(localized: "Dynamic WEP")
+        case 7: return String(localized: "WPA Enterprise")
+        case 8: return String(localized: "WPA/WPA2 Enterprise")
+        case 9: return String(localized: "WPA2 Enterprise")
+        case 10: return String(localized: "Enterprise")
+        case 13: return String(localized: "WPA3 Personal")
+        case 14: return String(localized: "WPA3 Enterprise")
+        case 15: return String(localized: "WPA3 Transition")
+        default: return "—"
+        }
+    }
+
+    private static func phyModeLabel(_ iface: CWInterface) -> String? {
+        switch iface.activePHYMode().rawValue {
+        case 0: return String(localized: "802.11a")
+        case 1: return String(localized: "802.11b")
+        case 2: return String(localized: "802.11g")
+        case 3: return String(localized: "802.11n")
+        case 4: return String(localized: "802.11ac")
+        case 5: return String(localized: "802.11ax")
+        case 6: return String(localized: "802.11be")
+        default: return nil
+        }
+    }
+
     private static func fetchWiFiDetails(_ iface: CWInterface) -> (ssid: String?, bssid: String?, channel: Int?, rssi: Int?, txRate: Double?, phyMode: String?, security: String)? {
-        let security: String = {
-            switch iface.security().rawValue {
-            case 0: return "None"
-            case 1: return "WEP"
-            case 2: return "WPA Personal"
-            case 3: return "WPA/WPA2 Personal"
-            case 4: return "WPA2 Personal"
-            case 5: return "Personal"
-            case 6: return "Dynamic WEP"
-            case 7: return "WPA Enterprise"
-            case 8: return "WPA/WPA2 Enterprise"
-            case 9: return "WPA2 Enterprise"
-            case 10: return "Enterprise"
-            case 13: return "WPA3 Personal"
-            case 14: return "WPA3 Enterprise"
-            case 15: return "WPA3 Transition"
-            default: return "—"
-            }
-        }()
-        let phyMode: String? = {
-            switch iface.activePHYMode().rawValue {
-            case 0: return "802.11a"
-            case 1: return "802.11b"
-            case 2: return "802.11g"
-            case 3: return "802.11n"
-            case 4: return "802.11ac"
-            case 5: return "802.11ax"
-            case 6: return "802.11be"
-            default: return nil
-            }
-        }()
-        return (iface.ssid(), iface.bssid(), iface.wlanChannel()?.channelNumber, iface.rssiValue(), iface.transmitRate(), phyMode, security)
+        return (iface.ssid(), iface.bssid(), iface.wlanChannel()?.channelNumber, iface.rssiValue(), iface.transmitRate(), phyModeLabel(iface), securityLabel(iface))
     }
 
 }

@@ -20,11 +20,21 @@ struct ChannelQuality: Identifiable {
     var id: String { "\(band)-\(channel)" }
 
     enum QualityLevel: String, CaseIterable {
-        case excellent = "Excellent"
-        case good      = "Good"
-        case moderate  = "Moderate"
-        case busy      = "Busy"
-        case congested = "Congested"
+        case excellent
+        case good
+        case moderate
+        case busy
+        case congested
+
+        var displayName: String {
+            switch self {
+            case .excellent: String(localized: "Excellent")
+            case .good:      String(localized: "Good")
+            case .moderate:  String(localized: "Moderate")
+            case .busy:      String(localized: "Busy")
+            case .congested: String(localized: "Congested")
+            }
+        }
 
         var scoreRange: ClosedRange<Int> {
             switch self {
@@ -48,9 +58,17 @@ struct ChannelQuality: Identifiable {
     }
 
     enum OverlapLevel: String {
-        case low = "Low"
-        case moderate = "Moderate"
-        case high = "High"
+        case low
+        case moderate
+        case high
+
+        var displayName: String {
+            switch self {
+            case .low:      String(localized: "Low")
+            case .moderate: String(localized: "Moderate")
+            case .high:     String(localized: "High")
+            }
+        }
     }
 }
 
@@ -76,7 +94,7 @@ enum ChannelQualityCalculator {
                 ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
                 : stride(from: band == "5" ? 36 : 1, through: band == "5" ? 165 : 233, by: 4).map { $0 }
 
-            let bandDisplay = band == "24" ? "2.4 GHz" : band == "5" ? "5 GHz" : "6 GHz"
+            let bandDisplay = band == "24" ? String(localized: "2.4 GHz") : band == "5" ? String(localized: "5 GHz") : String(localized: "6 GHz")
 
             // Score each channel
             let scored = channels.map { ch -> ChannelQuality in

@@ -12,7 +12,7 @@ struct TrendChartView: View {
 
     var body: some View {
         if snapshots.count < 2 {
-            Text("Collecting data…")
+            Text(String(localized: "Collecting data…"))
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .frame(maxWidth: .infinity, alignment: .center)
@@ -120,7 +120,7 @@ struct TrendChartView: View {
     }
 
     private func formatDuration(_ secs: TimeInterval) -> String {
-        if secs < 1 { return "now" }
+        if secs < 1 { return String(localized: "now") }
         if secs < 60 { return "\(Int(secs))s" }
         let m = Int(secs) / 60
         let s = Int(secs) % 60

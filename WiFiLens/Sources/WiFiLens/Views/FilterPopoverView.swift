@@ -6,13 +6,13 @@ struct FilterPopoverView: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            TextField("Filter by SSID or MAC/BSSID", text: $scannerViewModel.globalFilterQuery)
+            TextField(String(localized: "Filter by SSID or MAC/BSSID"), text: $scannerViewModel.globalFilterQuery)
                 .textFieldStyle(.plain)
                 .font(.system(size: 11))
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
 
-            Button("Clear") {
+            Button(String(localized: "Clear")) {
                 scannerViewModel.globalFilterQuery = ""
                 viewModel.showFilterPopover = false
             }

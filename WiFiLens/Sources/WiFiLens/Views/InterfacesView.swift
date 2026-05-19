@@ -2,8 +2,15 @@ import SwiftUI
 import CoreWLAN
 
 enum InterfaceViewMode: String, CaseIterable {
-    case simple  = "Simple"
-    case details = "Details"
+    case simple
+    case details
+
+    var displayName: String {
+        switch self {
+        case .simple:  String(localized: "Simple")
+        case .details: String(localized: "Details")
+        }
+    }
 }
 
 struct InterfacesView: View {
@@ -21,7 +28,7 @@ struct InterfacesView: View {
             HStack {
                 Picker("", selection: $mode) {
                     ForEach(InterfaceViewMode.allCases, id: \.self) { m in
-                        Text(m.rawValue).tag(m)
+                        Text(m.displayName).tag(m)
                     }
                 }
                 .pickerStyle(.segmented)
@@ -36,7 +43,7 @@ struct InterfacesView: View {
                 Image(systemName: "wifi.slash")
                     .font(.largeTitle)
                     .foregroundColor(.secondary)
-                Text("No network interfaces found")
+                Text(String(localized: "No network interfaces found"))
                     .foregroundColor(.secondary)
                 Spacer()
             } else if mode == .simple {
@@ -85,7 +92,7 @@ struct InterfacesView: View {
                         .fontWeight(.semibold)
                     HStack(spacing: 6) {
                         Circle().fill(.green).frame(width: 6, height: 6)
-                        Text("Connected")
+                        Text(String(localized: "Connected"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                         Text("· \(wifi.interfaceName)")
@@ -116,7 +123,7 @@ struct InterfacesView: View {
         HStack(spacing: 12) {
             // RSSI
             indicatorPill(
-                title: "RSSI",
+                title: String(localized: "RSSI"),
                 value: wifi.displayRSSI,
                 subtitle: nil,
                 color: rssiColor(wifi.rssi ?? -100),
@@ -125,7 +132,7 @@ struct InterfacesView: View {
 
             // PHY Mode
             indicatorPill(
-                title: "PHY Mode",
+                title: String(localized: "PHY Mode"),
                 value: wifi.displayPhyMode,
                 subtitle: wifiModelabel(wifi),
                 color: .accentColor,
@@ -135,7 +142,7 @@ struct InterfacesView: View {
             // Stability
             let stab = stability(wifi)
             indicatorPill(
-                title: "Stability",
+                title: String(localized: "Stability"),
                 value: stab.label,
                 subtitle: "\(stab.score)/100",
                 color: stab.color,
@@ -173,18 +180,18 @@ struct InterfacesView: View {
     private func linkDetails(_ wifi: NetworkInterfaceInfo) -> some View {
         HStack(alignment: .top, spacing: 24) {
             kvTable([
-                ("BSSID", wifi.displayBSSID),
-                ("Security", wifi.displaySecurity),
-                ("MCS / NSS", mcsNssLabel(wifi)),
-                ("Tx Rate", wifi.displayTxRate),
-                ("k / r / v", kvrLabel(wifi)),
+                (String(localized: "BSSID"), wifi.displayBSSID),
+                (String(localized: "Security"), wifi.displaySecurity),
+                (String(localized: "MCS / NSS"), mcsNssLabel(wifi)),
+                (String(localized: "Tx Rate"), wifi.displayTxRate),
+                (String(localized: "k / r / v"), kvrLabel(wifi)),
             ])
             kvTable([
-                ("IPv4", wifi.displayIP),
-                ("Subnet", wifi.displaySubnet),
-                ("Router", wifi.displayRouter),
-                ("DNS", wifi.displayDNS),
-                ("MAC", wifi.displayMAC),
+                (String(localized: "IPv4 Address"), wifi.displayIP),
+                (String(localized: "Subnet Mask"), wifi.displaySubnet),
+                (String(localized: "Router"), wifi.displayRouter),
+                (String(localized: "DNS"), wifi.displayDNS),
+                (String(localized: "Hardware MAC"), wifi.displayMAC),
             ])
         }
         .padding(16)
@@ -197,7 +204,7 @@ struct InterfacesView: View {
 
     private func otherInterfaces(_ others: [NetworkInterfaceInfo]) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Other Interfaces")
+            Text(String(localized: "Other Interfaces"))
                 .font(.headline)
                 .foregroundColor(.secondary)
             VStack(spacing: 4) {
@@ -256,14 +263,14 @@ struct InterfacesView: View {
 
     private func bandLabel(_ wifi: NetworkInterfaceInfo) -> String {
         guard let ch = wifi.channel else { return "—" }
-        if ch <= 14 { return "2.4 GHz" }
-        if ch <= 170 { return "5 GHz" }
-        return "6 GHz"
+        if ch <= 14 { return String(localized: "2.4 GHz") }
+        if ch <= 170 { return String(localized: "5 GHz") }
+        return String(localized: "6 GHz")
     }
 
     private func channelLabel(_ wifi: NetworkInterfaceInfo) -> String {
         guard let ch = wifi.channel else { return "—" }
-        return "Channel \(ch)"
+        return String(localized: "Channel \(ch)")
     }
 
     private func rssiColor(_ rssi: Int) -> Color {
@@ -340,10 +347,10 @@ struct InterfacesView: View {
 
         score = min(100, score)
         let label: String = switch score {
-        case 85...:  "Excellent"
-        case 70...:  "Good"
-        case 50...:  "Moderate"
-        default:     "Weak"
+        case 85...:  String(localized: "Excellent")
+        case 70...:  String(localized: "Good")
+        case 50...:  String(localized: "Moderate")
+        default:     String(localized: "Weak")
         }
         let color: Color = switch score {
         case 85...: .green
@@ -356,10 +363,10 @@ struct InterfacesView: View {
 
     private func wifiModelabel(_ wifi: NetworkInterfaceInfo) -> String {
         switch wifi.displayPhyMode {
-        case "802.11be": return "Wi‑Fi 7"
-        case "802.11ax": return "Wi‑Fi 6"
-        case "802.11ac": return "Wi‑Fi 5"
-        case "802.11n":  return "Wi‑Fi 4"
+        case "802.11be": return String(localized: "Wi‑Fi 7")
+        case "802.11ax": return String(localized: "Wi‑Fi 6")
+        case "802.11ac": return String(localized: "Wi‑Fi 5")
+        case "802.11n":  return String(localized: "Wi‑Fi 4")
         default: return wifi.displayPhyMode
         }
     }
@@ -422,23 +429,23 @@ private struct InterfaceCard: View {
             if info.ssid != nil {
                 Grid(horizontalSpacing: 16, verticalSpacing: 4) {
                     GridRow {
-                        Text("BSSID").font(.caption).foregroundColor(.secondary).gridColumnAlignment(.trailing)
+                        Text(String(localized: "BSSID")).font(.caption).foregroundColor(.secondary).gridColumnAlignment(.trailing)
                         Text(info.displayBSSID).font(.callout).textSelection(.enabled).gridColumnAlignment(.leading)
                     }
                     GridRow {
-                        Text("Channel").font(.caption).foregroundColor(.secondary).gridColumnAlignment(.trailing)
+                        Text(String(localized: "Channel")).font(.caption).foregroundColor(.secondary).gridColumnAlignment(.trailing)
                         Text(info.displayChannel).font(.callout).gridColumnAlignment(.leading)
                     }
                     GridRow {
-                        Text("Tx Rate").font(.caption).foregroundColor(.secondary).gridColumnAlignment(.trailing)
+                        Text(String(localized: "Tx Rate")).font(.caption).foregroundColor(.secondary).gridColumnAlignment(.trailing)
                         Text(info.displayTxRate).font(.callout).gridColumnAlignment(.leading)
                     }
                     GridRow {
-                        Text("PHY Mode").font(.caption).foregroundColor(.secondary).gridColumnAlignment(.trailing)
+                        Text(String(localized: "PHY Mode")).font(.caption).foregroundColor(.secondary).gridColumnAlignment(.trailing)
                         Text(info.displayPhyMode).font(.callout).gridColumnAlignment(.leading)
                     }
                     GridRow {
-                        Text("Security").font(.caption).foregroundColor(.secondary).gridColumnAlignment(.trailing)
+                        Text(String(localized: "Security")).font(.caption).foregroundColor(.secondary).gridColumnAlignment(.trailing)
                         Text(info.displaySecurity).font(.callout).gridColumnAlignment(.leading)
                     }
                 }
@@ -449,23 +456,23 @@ private struct InterfaceCard: View {
 
             Grid(horizontalSpacing: 16, verticalSpacing: 4) {
                 GridRow {
-                    Text("Hardware MAC").font(.caption).foregroundColor(.secondary).gridColumnAlignment(.trailing)
+                    Text(String(localized: "Hardware MAC")).font(.caption).foregroundColor(.secondary).gridColumnAlignment(.trailing)
                     Text(info.displayMAC).font(.callout).textSelection(.enabled).gridColumnAlignment(.leading)
                 }
                 GridRow {
-                    Text("IPv4 Address").font(.caption).foregroundColor(.secondary).gridColumnAlignment(.trailing)
+                    Text(String(localized: "IPv4 Address")).font(.caption).foregroundColor(.secondary).gridColumnAlignment(.trailing)
                     Text(info.displayIP).font(.callout).gridColumnAlignment(.leading)
                 }
                 GridRow {
-                    Text("Subnet Mask").font(.caption).foregroundColor(.secondary).gridColumnAlignment(.trailing)
+                    Text(String(localized: "Subnet Mask")).font(.caption).foregroundColor(.secondary).gridColumnAlignment(.trailing)
                     Text(info.displaySubnet).font(.callout).gridColumnAlignment(.leading)
                 }
                 GridRow {
-                    Text("Router").font(.caption).foregroundColor(.secondary).gridColumnAlignment(.trailing)
+                    Text(String(localized: "Router")).font(.caption).foregroundColor(.secondary).gridColumnAlignment(.trailing)
                     Text(info.displayRouter).font(.callout).gridColumnAlignment(.leading)
                 }
                 GridRow {
-                    Text("DNS").font(.caption).foregroundColor(.secondary).gridColumnAlignment(.trailing)
+                    Text(String(localized: "DNS")).font(.caption).foregroundColor(.secondary).gridColumnAlignment(.trailing)
                     Text(info.displayDNS).font(.callout).gridColumnAlignment(.leading)
                 }
             }

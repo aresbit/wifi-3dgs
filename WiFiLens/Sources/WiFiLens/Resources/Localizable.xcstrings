@@ -2,16 +2,44 @@
   "sourceLanguage" : "en",
   "strings" : {
     "·" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "·"
+          }
+        }
+      }
     },
     "· %@" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "· %@"
+          }
+        }
+      }
     },
     "· Adj:" : {
-
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "· 相邻:"
+          }
+        }
+      }
     },
     "{\"mcpServers\":{\"wifi-lens\":{\"command\":\"WiFiLensMCP\",\"args\":[\"%@\"]}}}" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "{\"mcpServers\":{\"wifi-lens\":{\"command\":\"WiFiLensMCP\",\"args\":[\"%@\"]}}}"
+          }
+        }
+      }
     },
     "%@" : {
 
@@ -23,18 +51,37 @@
             "state" : "new",
             "value" : "%1$@ %2$@%3$@"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@%3$@"
+          }
         }
       }
     },
     "%@ dBm" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ dBm"
+          }
+        }
+      }
     },
     "%@/100" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@/100"
+          }
+        }
+      }
     },
     "%lld APs" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -44,8 +91,7 @@
       }
     },
     "%lld networks" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -55,8 +101,7 @@
       }
     },
     "%lld rows" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -65,8 +110,28 @@
         }
       }
     },
+    "● Current" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "● 当前"
+          }
+        }
+      }
+    },
+    "★ Recommended" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "★ 推荐"
+          }
+        }
+      }
+    },
     "1 second" : {
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -76,7 +141,7 @@
       }
     },
     "2 seconds" : {
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -86,8 +151,7 @@
       }
     },
     "2.4 GHz" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -97,7 +161,7 @@
       }
     },
     "3 seconds" : {
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -107,8 +171,7 @@
       }
     },
     "5 GHz" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -118,7 +181,7 @@
       }
     },
     "5 seconds" : {
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -128,8 +191,7 @@
       }
     },
     "6 GHz" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -139,7 +201,7 @@
       }
     },
     "10 seconds" : {
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -148,8 +210,78 @@
         }
       }
     },
+    "802.11a" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "802.11a"
+          }
+        }
+      }
+    },
+    "802.11ac" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "802.11ac"
+          }
+        }
+      }
+    },
+    "802.11ax" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "802.11ax"
+          }
+        }
+      }
+    },
+    "802.11b" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "802.11b"
+          }
+        }
+      }
+    },
+    "802.11be" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "802.11be"
+          }
+        }
+      }
+    },
+    "802.11g" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "802.11g"
+          }
+        }
+      }
+    },
+    "802.11n" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "802.11n"
+          }
+        }
+      }
+    },
     "A simple Wi-Fi channel and signal strength analyzer for macOS." : {
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -158,9 +290,18 @@
         }
       }
     },
+    "Adj" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相邻"
+          }
+        }
+      }
+    },
     "AP" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -169,9 +310,18 @@
         }
       }
     },
+    "APs" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AP数"
+          }
+        }
+      }
+    },
     "Automatically check for updates" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -181,8 +331,7 @@
       }
     },
     "Band" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -192,10 +341,47 @@
       }
     },
     "BSSID" : {
-
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BSSID"
+          }
+        }
+      }
     },
-    "Channel" : {
-      "localizations" : {
+    "Busy" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "繁忙"
+          }
+        }
+      }
+    },
+    "BW" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "带宽"
+          }
+        }
+      }
+    },
+    "CC" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "国家"
+          }
+        }
+      }
+    },
+    "Ch" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -204,9 +390,38 @@
         }
       }
     },
+    "CH" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "信道"
+          }
+        }
+      }
+    },
+    "Channel" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "信道"
+          }
+        }
+      }
+    },
+    "Channel %@" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "信道 %@"
+          }
+        }
+      }
+    },
     "Channels" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -216,8 +431,7 @@
       }
     },
     "Check for Updates…" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -227,8 +441,7 @@
       }
     },
     "Check Now" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -238,7 +451,7 @@
       }
     },
     "Claude Desktop config" : {
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -248,8 +461,7 @@
       }
     },
     "Clear" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -258,11 +470,28 @@
         }
       }
     },
+    "Co-Ch" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同频"
+          }
+        }
+      }
+    },
     "Co:" : {
-
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同频:"
+          }
+        }
+      }
     },
     "Collecting data…" : {
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -271,12 +500,28 @@
         }
       }
     },
+    "Congested" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拥堵"
+          }
+        }
+      }
+    },
     "Connected" : {
-
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已连接"
+          }
+        }
+      }
     },
     "Connection" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -285,9 +530,18 @@
         }
       }
     },
+    "CSV" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CSV"
+          }
+        }
+      }
+    },
     "Denied" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -296,9 +550,18 @@
         }
       }
     },
+    "Details" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "详情"
+          }
+        }
+      }
+    },
     "Disconnected" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -307,12 +570,38 @@
         }
       }
     },
+    "Dismiss" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关闭"
+          }
+        }
+      }
+    },
     "DNS" : {
-
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DNS"
+          }
+        }
+      }
+    },
+    "Dynamic WEP" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "动态 WEP"
+          }
+        }
+      }
     },
     "Enable MCP server" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -321,9 +610,28 @@
         }
       }
     },
+    "Enterprise" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "企业"
+          }
+        }
+      }
+    },
+    "Excellent" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "优秀"
+          }
+        }
+      }
+    },
     "Export" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -332,8 +640,28 @@
         }
       }
     },
+    "Export as CSV" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导出为 CSV"
+          }
+        }
+      }
+    },
+    "Export as PNG" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导出为 PNG"
+          }
+        }
+      }
+    },
     "Expose current Wi-Fi scan data as a local HTTP API for AI tools (Claude Desktop, etc.) to query via MCP." : {
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -343,8 +671,7 @@
       }
     },
     "Filter" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -354,8 +681,7 @@
       }
     },
     "Filter by SSID or BSSID…" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -365,8 +691,7 @@
       }
     },
     "Filter by SSID or MAC/BSSID" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -376,8 +701,7 @@
       }
     },
     "Freeze All" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -387,8 +711,7 @@
       }
     },
     "General" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -397,9 +720,18 @@
         }
       }
     },
+    "Good" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "良好"
+          }
+        }
+      }
+    },
     "Granted" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -408,15 +740,48 @@
         }
       }
     },
+    "H" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "H"
+          }
+        }
+      }
+    },
     "Hardware MAC" : {
-
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "硬件 MAC"
+          }
+        }
+      }
     },
     "Hide Hidden" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隐藏无名称网络"
+          }
+        }
+      }
+    },
+    "High" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "高"
+          }
+        }
+      }
     },
     "Ignore" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -426,8 +791,7 @@
       }
     },
     "Interfaces" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -436,8 +800,55 @@
         }
       }
     },
+    "Intf" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "干扰"
+          }
+        }
+      }
+    },
     "IPv4 Address" : {
-
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IPv4 地址"
+          }
+        }
+      }
+    },
+    "k" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "k"
+          }
+        }
+      }
+    },
+    "k / r / v" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "k / r / v"
+          }
+        }
+      }
+    },
+    "Level" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "等级"
+          }
+        }
+      }
     },
     "Loading..." : {
       "localizations" : {
@@ -450,8 +861,7 @@
       }
     },
     "Location Services are disabled" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -461,8 +871,7 @@
       }
     },
     "Location Services permission is required to read Wi-Fi SSIDs." : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -481,9 +890,18 @@
         }
       }
     },
+    "Low" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "低"
+          }
+        }
+      }
+    },
     "MCP" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -492,9 +910,38 @@
         }
       }
     },
+    "MCS" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MCS"
+          }
+        }
+      }
+    },
+    "MCS / NSS" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MCS / NSS"
+          }
+        }
+      }
+    },
+    "Moderate" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一般"
+          }
+        }
+      }
+    },
     "Network Info" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -504,8 +951,7 @@
       }
     },
     "Network Table" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -515,18 +961,61 @@
       }
     },
     "No channel data available" : {
-
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无信道数据"
+          }
+        }
+      }
     },
     "No network interfaces found" : {
-
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未找到网络接口"
+          }
+        }
+      }
     },
     "No Wi-Fi connection" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "无 Wi-Fi 连接"
+          }
+        }
+      }
+    },
+    "None" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无"
+          }
+        }
+      }
+    },
+    "now" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "现在"
+          }
+        }
+      }
+    },
+    "NSS" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NSS"
           }
         }
       }
@@ -542,8 +1031,7 @@
       }
     },
     "Open Location Preferences" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -553,8 +1041,7 @@
       }
     },
     "Open Preferences" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -564,8 +1051,7 @@
       }
     },
     "Open System Settings" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -575,11 +1061,27 @@
       }
     },
     "Other Interfaces" : {
-
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "其他接口"
+          }
+        }
+      }
+    },
+    "Overlap" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重叠"
+          }
+        }
+      }
     },
     "Pause" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -589,8 +1091,7 @@
       }
     },
     "Pending" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -600,8 +1101,7 @@
       }
     },
     "Permission denied" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -611,8 +1111,7 @@
       }
     },
     "Permission is granted, but macOS is still not returning SSIDs." : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -621,11 +1120,48 @@
         }
       }
     },
+    "Personal" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "个人"
+          }
+        }
+      }
+    },
+    "PHY" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PHY"
+          }
+        }
+      }
+    },
     "PHY Mode" : {
-
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PHY 模式"
+          }
+        }
+      }
+    },
+    "PNG" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PNG"
+          }
+        }
+      }
     },
     "Port:" : {
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -634,9 +1170,28 @@
         }
       }
     },
+    "Previous Crash Detected" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "检测到上次崩溃"
+          }
+        }
+      }
+    },
+    "Professional" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "专业"
+          }
+        }
+      }
+    },
     "Quit" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -645,9 +1200,28 @@
         }
       }
     },
+    "r" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "r"
+          }
+        }
+      }
+    },
+    "Rec" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "推荐"
+          }
+        }
+      }
+    },
     "Refresh interval" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -657,8 +1231,7 @@
       }
     },
     "Reset Zoom" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -668,8 +1241,7 @@
       }
     },
     "Restricted" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -679,8 +1251,7 @@
       }
     },
     "Resume" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -690,7 +1261,24 @@
       }
     },
     "Router" : {
-
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "路由器"
+          }
+        }
+      }
+    },
+    "RSSI" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RSSI"
+          }
+        }
+      }
     },
     "Scan failed" : {
       "localizations" : {
@@ -703,8 +1291,7 @@
       }
     },
     "Scan Interval" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -714,8 +1301,7 @@
       }
     },
     "Scanning" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -734,8 +1320,35 @@
         }
       }
     },
+    "Score" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "评分"
+          }
+        }
+      }
+    },
+    "Sec" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安全"
+          }
+        }
+      }
+    },
     "Security" : {
-
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安全"
+          }
+        }
+      }
     },
     "Show:" : {
       "localizations" : {
@@ -747,13 +1360,32 @@
         }
       }
     },
+    "Simple" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "简洁"
+          }
+        }
+      }
+    },
     "Spectrum" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "频谱"
+          }
+        }
+      }
+    },
+    "SSID" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SSID"
           }
         }
       }
@@ -768,12 +1400,28 @@
         }
       }
     },
+    "Stability" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "稳定性"
+          }
+        }
+      }
+    },
     "Subnet Mask" : {
-
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "子网掩码"
+          }
+        }
+      }
     },
     "Toggle Expand" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -783,11 +1431,17 @@
       }
     },
     "Tx Rate" : {
-
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "发送速率"
+          }
+        }
+      }
     },
     "Unknown" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -797,8 +1451,7 @@
       }
     },
     "Updates" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -807,9 +1460,18 @@
         }
       }
     },
+    "v" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "v"
+          }
+        }
+      }
+    },
     "Waiting for authorization" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -828,9 +1490,28 @@
         }
       }
     },
+    "Weak" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "弱"
+          }
+        }
+      }
+    },
+    "WEP" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WEP"
+          }
+        }
+      }
+    },
     "Wi-Fi scan failed" : {
-      "extractionState" : "stale",
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -839,12 +1520,142 @@
         }
       }
     },
+    "Wi‑Fi 4" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wi‑Fi 4"
+          }
+        }
+      }
+    },
+    "Wi‑Fi 5" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wi‑Fi 5"
+          }
+        }
+      }
+    },
+    "Wi‑Fi 6" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wi‑Fi 6"
+          }
+        }
+      }
+    },
+    "Wi‑Fi 7" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wi‑Fi 7"
+          }
+        }
+      }
+    },
     "WiFi Lens" : {
-      "localizations" : {
+"localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "WiFi Lens"
+          }
+        }
+      }
+    },
+    "WPA Enterprise" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WPA 企业"
+          }
+        }
+      }
+    },
+    "WPA Personal" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WPA 个人"
+          }
+        }
+      }
+    },
+    "WPA/WPA2 Enterprise" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WPA/WPA2 企业"
+          }
+        }
+      }
+    },
+    "WPA/WPA2 Personal" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WPA/WPA2 个人"
+          }
+        }
+      }
+    },
+    "WPA2 Enterprise" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WPA2 企业"
+          }
+        }
+      }
+    },
+    "WPA2 Personal" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WPA2 个人"
+          }
+        }
+      }
+    },
+    "WPA3 Enterprise" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WPA3 企业"
+          }
+        }
+      }
+    },
+    "WPA3 Personal" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WPA3 个人"
+          }
+        }
+      }
+    },
+    "WPA3 Transition" : {
+"localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WPA3 过渡"
           }
         }
       }

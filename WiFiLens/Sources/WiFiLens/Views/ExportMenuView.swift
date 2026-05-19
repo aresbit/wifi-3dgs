@@ -15,11 +15,11 @@ struct ExportMenuView: View {
 
     var body: some View {
         Menu {
-            Button("Export as PNG") {
+            Button(String(localized: "Export as PNG")) {
                 exportType = .png
                 showSavePanel = true
             }
-            Button("Export as CSV") {
+            Button(String(localized: "Export as CSV")) {
                 exportType = .csv
                 showSavePanel = true
             }

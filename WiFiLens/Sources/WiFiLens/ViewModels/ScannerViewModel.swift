@@ -56,6 +56,13 @@ final class ScannerViewModel {
     var interfaceName: String = ""
     var accessState: ScanAccessState = .waitingForAuthorization
 
+    private var hasStarted = false
+    private var startupTask: Task<Void, Never>?
+
+    init() {
+        mcpServer.dataProvider = { [weak self] in self?.lastNetworks ?? [] }
+    }
+
     var globalFilterQuery: String = "" {
         didSet { applyGlobalFilterToBands() }
     }
@@ -101,34 +108,44 @@ final class ScannerViewModel {
     private var scanTask: Task<Void, Never>?
 
     func start() async {
-        guard !isScanning else { return }
-        isScanning = true
-
-        Log.scanner.info("start() — begin")
-        locationManager.requestPermissionIfNeeded()
-        Log.scanner.info("start() — auth status = \(locationManager.authorizationStatus.rawValue)")
-
-        supportedBands = await scanner.supportedBands()
-        Log.scanner.info("start() — supported bands = \(supportedBands.map { $0.id }.sorted())")
-        updateInterfaceName()
-
-        if locationManager.authorizationStatus == .notDetermined {
-            accessState = .waitingForAuthorization
-            Log.scanner.info("start() — waiting for initial authorization")
-            _ = await locationManager.waitForInitialDecisionIfNeeded()
-            Log.scanner.info("start() — authorization settled = \(locationManager.authorizationStatus.rawValue)")
-        } else {
-            locationManager.refreshStatus()
-        }
-
-        guard locationManager.isAuthorizedForSSID else {
-            Log.scanner.warning("start() — authorization denied/restricted")
-            accessState = .denied
-            isScanning = false
+        if let startupTask {
+            await startupTask.value
             return
         }
+        guard !hasStarted else { return }
 
-        startScanLoop()
+        let task = Task { @MainActor in
+            Log.scanner.info("start() — begin")
+            locationManager.requestPermissionIfNeeded()
+
+            startScanLoop()
+
+            supportedBands = await scanner.supportedBands()
+            Log.scanner.info("start() — supported bands = \(supportedBands.map { $0.id }.sorted())")
+            updateInterfaceName()
+
+            if locationManager.authorizationStatus == .notDetermined {
+                accessState = .waitingForAuthorization
+                Log.scanner.info("start() — waiting for initial authorization")
+                _ = await locationManager.waitForInitialDecisionIfNeeded()
+                Log.scanner.info("start() — authorization settled = \(locationManager.authorizationStatus.rawValue)")
+            } else {
+                locationManager.refreshStatus()
+            }
+
+            if !locationManager.isAuthorizedForSSID {
+                Log.scanner.warning("start() — authorization denied/restricted")
+                accessState = .denied
+                stop()
+                return
+            }
+
+            hasStarted = true
+        }
+
+        startupTask = task
+        await task.value
+        startupTask = nil
     }
 
     func handleSceneDidBecomeActive() async {
@@ -260,14 +277,14 @@ final class ScannerViewModel {
 
         // Validate selected network still exists in the new scan
         if let selectedID = selectedNetworkID {
-            let allIDs = bandViewModels.flatMap { $0.allSeriesData.map(\.id) }
+            let allIDs = bandViewModels.flatMap { $0.renderedAllSeriesData.map(\.id) }
             if !allIDs.contains(selectedID) {
                 selectedNetworkID = nil
             }
         }
 
         let ssidCount = bandViewModels.reduce(0) { count, vm in
-            count + vm.allSeriesData.filter { $0.ssid != "n/a" }.count
+            count + vm.renderedAllSeriesData.filter { $0.ssid != "n/a" }.count
         }
         accessState = ssidCount > 0 ? .scanning : .grantedButSSIDUnavailable
     }

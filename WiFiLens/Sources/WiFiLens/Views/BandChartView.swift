@@ -42,15 +42,54 @@ struct BandChartView: View {
 
     /// Snapshots for the network currently selected (if it belongs to this band).
     private var selectedSnapshots: [NetworkSnapshot]? {
-        guard let selID = scannerViewModel.selectedNetworkID,
-              let series = viewModel.displayedSeriesData.first(where: { $0.id == selID })
-        else { return nil }
-        return viewModel.allSnapshots[series.bssid]
+        viewModel.renderedSnapshots(for: scannerViewModel.selectedNetworkID)
+    }
+
+    private var selectedSeries: ChartSeriesData? {
+        viewModel.renderedSeries(for: scannerViewModel.selectedNetworkID)
+    }
+
+    private var visibleSeries: [ChartSeriesData] {
+        viewModel.visibleSeriesData()
+    }
+
+    private var renderedSeriesData: [ChartSeriesData] {
+        viewModel.renderedDisplayedSeriesData
+    }
+
+    private var strongestRSSI: Int {
+        viewModel.strongestRenderedRSSI()
+    }
+
+    private var isEmpty: Bool {
+        viewModel.renderedIsEmpty
+    }
+
+    private var selectedNetworkID: String? {
+        scannerViewModel.selectedNetworkID
+    }
+
+    private var hasSelection: Bool {
+        selectedNetworkID != nil
+    }
+
+    private func isSelected(_ series: ChartSeriesData) -> Bool {
+        selectedNetworkID == series.id
+    }
+
+    private func strokeStyle(for series: ChartSeriesData) -> (areaOpacity: Double, strokeOpacity: Double, strokeWidth: CGFloat) {
+        if isSelected(series) {
+            return (0.55, 1.0, 2)
+        }
+        if hasSelection {
+            return (0.10, 0.20, 1)
+        }
+        return (0.3, 0.6, 1)
     }
 
     private var chartContent: some View {
         Group {
-            if viewModel.isEmpty {
+            if isEmpty {
                 VStack {
                     Spacer()
                     Text("Loading...")
@@ -65,7 +104,7 @@ struct BandChartView: View {
                             .gesture(zoomGesture(in: geometry))
                     }
 
-                    if let snaps = selectedSnapshots, let series = viewModel.displayedSeriesData.first(where: { $0.id == scannerViewModel.selectedNetworkID }) {
+                    if let snaps = selectedSnapshots, let series = selectedSeries {
                         Divider()
                             .padding(.top, 2)
                         TrendChartView(snapshots: snaps, color: series.color)
@@ -90,9 +129,6 @@ struct BandChartView: View {
             let yMin = Double(Constants.rssiNoiseFloor)
 
             // Dynamic y-axis: scale to the strongest visible signal, rounded up to nearest 10
-            let strongestRSSI = viewModel.displayedSeriesData
-                .filter { $0.isVisible && !$0.isFilteredOut }
-                .map(\.rssi).max() ?? 0
             let yMax = min(0.0, ceil(Double(strongestRSSI) / 10.0) * 10)
 
             let scaleX = chartRect.width / (xMax - xMin)
@@ -145,7 +181,7 @@ struct BandChartView: View {
             let barWidth: CGFloat = 5
             let barGap: CGFloat = 1
             let heatY = chartRect.maxY + 3
-            let visible = viewModel.displayedSeriesData.filter { $0.isVisible && !$0.isFilteredOut }
+            let visible = visibleSeries
 
             // Group by integer-rounded apex to count occupancy and stack bars
             var apexSignals: [Int: [Color]] = [:]
@@ -177,27 +213,8 @@ struct BandChartView: View {
             let clipPath = Path(chartRect)
             context.clip(to: clipPath)
 
-            for series in viewModel.displayedSeriesData where series.isVisible && !series.isFilteredOut {
-                let isSelected = scannerViewModel.selectedNetworkID == series.id
-                let hasSelection = scannerViewModel.selectedNetworkID != nil
-
-                let areaOpacity: Double
-                let strokeOpacity: Double
-                let strokeWidth: CGFloat
-
-                if isSelected {
-                    areaOpacity = 0.55
-                    strokeOpacity = 1.0
-                    strokeWidth = 2
-                } else if hasSelection {
-                    areaOpacity = 0.10
-                    strokeOpacity = 0.20
-                    strokeWidth = 1
-                } else {
-                    areaOpacity = 0.3
-                    strokeOpacity = 0.6
-                    strokeWidth = 1
-                }
+            for series in visibleSeries {
+                let style = strokeStyle(for: series)
 
                 let curve = series.curvePoints
                 guard curve.count >= 2 else { continue }
@@ -211,13 +228,13 @@ struct BandChartView: View {
                 path.addLine(to: dataToPoint(channel: Double(series.left), rssi: yMin))
                 path.closeSubpath()
 
-                context.fill(path, with: .color(series.color.opacity(areaOpacity)))
-                context.stroke(path, with: .color(series.color.opacity(strokeOpacity)), lineWidth: strokeWidth)
+                context.fill(path, with: .color(series.color.opacity(style.areaOpacity)))
+                context.stroke(path, with: .color(series.color.opacity(style.strokeOpacity)), lineWidth: style.strokeWidth)
             }
         }
         .overlay {
             DataLabelOverlay(
-                seriesData: viewModel.displayedSeriesData,
+                seriesData: renderedSeriesData,
                 leftAxisWidth: leftAxisWidth,
                 bottomAxisHeight: bottomAxisHeight,
                 chartMarginTop: chartMarginTop,
@@ -227,7 +244,7 @@ struct BandChartView: View {
                 xDataMax: viewModel.band.maxChannel,
                 zoomMin: viewModel.zoomMin,
                 zoomMax: viewModel.zoomMax,
-                selectedNetworkID: scannerViewModel.selectedNetworkID
+                selectedNetworkID: selectedNetworkID
             )
         }
     }

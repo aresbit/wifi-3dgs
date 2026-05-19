@@ -3,6 +3,13 @@ import SwiftUI
 @MainActor
 @Observable
 final class BandChartViewModel {
+    private struct RenderSnapshot {
+        var allSeriesData: [ChartSeriesData]
+        var displayedSeriesData: [ChartSeriesData]
+        var snapshots: [String: [NetworkSnapshot]]
+        var channelOccupancy: [Int: Int]
+    }
+
     let band: ChannelBand
 
     var isFrozen: Bool = false
@@ -19,19 +26,106 @@ final class BandChartViewModel {
     private(set) var channelOccupancy: [Int: Int] = [:]  // channel → network count
     private var currentHiddenBands: Set<String> = []
     private var currentHideHiddenSSIDs: Bool = false
+    private var frozenSnapshot: RenderSnapshot?
     var chartSize: CGSize = .zero
 
     var hasFilter: Bool { !currentFilterQuery.trimmingCharacters(in: .whitespaces).isEmpty }
-    var isEmpty: Bool { allSeriesData.isEmpty }
+    var renderedAllSeriesData: [ChartSeriesData] { frozenSnapshot?.allSeriesData ?? allSeriesData }
+    var renderedDisplayedSeriesData: [ChartSeriesData] { frozenSnapshot?.displayedSeriesData ?? displayedSeriesData }
+    var renderedSnapshots: [String: [NetworkSnapshot]] { frozenSnapshot?.snapshots ?? allSnapshots }
+    var renderedChannelOccupancy: [Int: Int] { frozenSnapshot?.channelOccupancy ?? channelOccupancy }
+    var renderedNetworkCount: Int { renderedAllSeriesData.count }
+    var renderedIsEmpty: Bool { renderedAllSeriesData.isEmpty }
 
     init(band: ChannelBand) {
         self.band = band
     }
 
+    private func makeDisplayedSeriesData(from source: [ChartSeriesData], hiddenBands: Set<String>, hideHiddenSSIDs: Bool) -> [ChartSeriesData] {
+        let needle = currentFilterQuery.trimmingCharacters(in: .whitespaces).lowercased()
+        let bandHidden = hiddenBands.contains(band.id)
+        return source.map { series in
+            var series = series
+            let textFilter = needle.isEmpty
+                || series.ssid.lowercased().contains(needle)
+                || series.bssid.lowercased().contains(needle)
+            let hiddenSSIDFilter = !hideHiddenSSIDs || !series.isHiddenSSID
+            series.isFilteredOut = bandHidden || !textFilter || !hiddenSSIDFilter
+            return series
+        }
+    }
+
+    private func currentRenderSnapshot() -> RenderSnapshot {
+        RenderSnapshot(
+            allSeriesData: allSeriesData,
+            displayedSeriesData: displayedSeriesData,
+            snapshots: allSnapshots,
+            channelOccupancy: channelOccupancy
+        )
+    }
+
+    private func refreshRenderedState() {
+        displayedSeriesData = makeDisplayedSeriesData(
+            from: allSeriesData,
+            hiddenBands: currentHiddenBands,
+            hideHiddenSSIDs: currentHideHiddenSSIDs
+        )
+    }
+
+    private func selectedSeriesExists(_ selectedNetworkID: String?) -> Bool {
+        guard let selectedNetworkID else { return true }
+        return renderedAllSeriesData.contains { $0.id == selectedNetworkID }
+    }
+
+    func validateSelection(_ selectedNetworkID: String?) -> Bool {
+        selectedSeriesExists(selectedNetworkID)
+    }
+
+    func renderedSnapshots(for selectedNetworkID: String?) -> [NetworkSnapshot]? {
+        guard let selectedNetworkID,
+              let series = renderedDisplayedSeriesData.first(where: { $0.id == selectedNetworkID })
+        else { return nil }
+        return renderedSnapshots[series.bssid]
+    }
+
+    func renderedSeries(for selectedNetworkID: String?) -> ChartSeriesData? {
+        guard let selectedNetworkID else { return nil }
+        return renderedDisplayedSeriesData.first(where: { $0.id == selectedNetworkID })
+    }
+
+    func setFreeze(_ frozen: Bool) {
+        guard isFrozen != frozen else { return }
+        isFrozen = frozen
+        if frozen {
+            frozenSnapshot = currentRenderSnapshot()
+        } else {
+            frozenSnapshot = nil
+            refreshRenderedState()
+        }
+    }
+
+    func toggleFreeze() {
+        setFreeze(!isFrozen)
+    }
+
+    func syncFreezeState(from frozen: Bool) {
+        setFreeze(frozen)
+    }
+
+    func visibleSeriesData() -> [ChartSeriesData] {
+        renderedDisplayedSeriesData.filter { $0.isVisible && !$0.isFilteredOut }
+    }
+
+    func strongestRenderedRSSI() -> Int {
+        visibleSeriesData().map(\.rssi).max() ?? 0
+    }
+}
+
+extension BandChartViewModel {
+
     func updateNetworks(_ networks: [WiFiNetwork], colorHasher: SSIDColorHasher, filterQuery: String, trends: [String: (direction: TrendDirection, delta: Int)] = [:], snapshots: [String: [NetworkSnapshot]] = [:], hiddenBSSIDs: Set<String> = [], hiddenBands: Set<String> = [], hideHiddenSSIDs: Bool = false) {
         var dataArray = ChannelSpanCalculator.toSeriesData(networks, colorHasher: colorHasher, trends: trends, hiddenBSSIDs: hiddenBSSIDs)
 
-        // Compute per-channel occupancy and quality scores
         var occ: [Int: Int] = [:]
         for s in dataArray { occ[s.channel, default: 0] += 1 }
         channelOccupancy = occ
@@ -51,21 +145,17 @@ final class BandChartViewModel {
         currentHideHiddenSSIDs = hideHiddenSSIDs
         currentFilterQuery = filterQuery
         if !isFrozen {
-            applyFilter(filterQuery, hiddenBands: hiddenBands, hideHiddenSSIDs: hideHiddenSSIDs)
+            refreshRenderedState()
         }
     }
 
     static func computeScore(rssi: Int, channelCount: Int, supportsK: Bool, supportsR: Bool, supportsV: Bool, channelWidth: String) -> Int {
-        // RSSI: -30 → 98, -70 → 42, -90 → 14
         let rssiScore = max(0, min(100, Int(Double(rssi + 100) * 1.4)))
-        // Congestion: fewer neighbors = better
         let congScore: Int = switch channelCount {
         case 1: 100; case 2: 70; case 3: 50; case 4: 35; default: 20
         }
-        // Roaming protocols
         let protoCount = [supportsK, supportsR, supportsV].filter { $0 }.count
         let protoScore = [0, 40, 70, 100][protoCount]
-        // Channel width
         let widthScore: Int = switch channelWidth {
         case "160": 100; case "80": 75; case "40": 50; default: 25
         }
@@ -83,23 +173,10 @@ final class BandChartViewModel {
         if let filterQuery {
             currentFilterQuery = filterQuery
         }
-        let needle = currentFilterQuery.trimmingCharacters(in: .whitespaces).lowercased()
-        let bandHidden = hiddenBands.contains(band.id)
-        displayedSeriesData = allSeriesData.map { s in
-            var s = s
-            let textFilter = needle.isEmpty
-                || s.ssid.lowercased().contains(needle)
-                || s.bssid.lowercased().contains(needle)
-            let hiddenSSIDFilter = !hideHiddenSSIDs || !s.isHiddenSSID
-            s.isFilteredOut = bandHidden || !textFilter || !hiddenSSIDFilter
-            return s
-        }
-    }
-
-    func toggleFreeze() {
-        isFrozen.toggle()
+        currentHiddenBands = hiddenBands
+        currentHideHiddenSSIDs = hideHiddenSSIDs
         if !isFrozen {
-            applyFilter(currentFilterQuery, hiddenBands: currentHiddenBands, hideHiddenSSIDs: currentHideHiddenSSIDs)
+            refreshRenderedState()
         }
     }
 
