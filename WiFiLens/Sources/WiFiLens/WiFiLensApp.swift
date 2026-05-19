@@ -58,7 +58,7 @@ struct WiFiLensApp: App {
                 case .channels:
                     ChannelQualityView(channels: viewModel.channelQualities)
                 case .interfaces:
-                    InterfacesView(interfaces: viewModel.networkInfo)
+                    InterfacesView(interfaces: viewModel.networkInfo, scannerViewModel: viewModel)
                 }
                 }
                 .alert("Previous Crash Detected", isPresented: $showCrashLog) {

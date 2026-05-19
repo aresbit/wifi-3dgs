@@ -10,6 +10,7 @@ struct ChannelQualityView: View {
     @State private var mode: ChannelViewMode = .simple
     @State private var sortKey: SortKey = .qualityScore
     @State private var sortAscending: Bool = false
+    @State private var selectedID: String?
 
     enum SortKey: String { case channel, bandDisplay, qualityScore, qualityLevel, apCount, coChannelCount, adjacentCount, overlapLevel, strongestNeighborRSSI, interferenceScore }
 
@@ -112,7 +113,9 @@ struct ChannelQualityView: View {
                         cell("\(ch.interferenceScore)")
                         cell(ch.isRecommended ? "★" : ch.isCurrentChannel ? "●" : "")
                     }
-                    .background(idx.isMultiple(of: 2) ? Color.clear : Color.primary.opacity(0.04))
+                    .background(rowBG(ch.id, idx: idx))
+                    .contentShape(Rectangle())
+                    .onTapGesture { selectedID = ch.id }
                 }
             }
             .padding(12)
@@ -142,6 +145,11 @@ struct ChannelQualityView: View {
     private func tableHeader(_ text: String) -> some View {
         Text(text).font(.system(size: 10, weight: .medium)).foregroundColor(.secondary)
             .frame(maxWidth: .infinity, alignment: .center).padding(.vertical, 5)
+    }
+
+    private func rowBG(_ id: String, idx: Int) -> Color {
+        if selectedID == id { return .accentColor.opacity(0.25) }
+        return idx.isMultiple(of: 2) ? .clear : .primary.opacity(0.04)
     }
 
     private func cell(_ text: String, bold: Bool = false, color: Color = .primary) -> some View {
