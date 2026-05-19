@@ -11,18 +11,21 @@ actor WiFiScanner {
     private var shouldStop = false
 
     /// Emits scan results or failures at the configured interval.
+    /// On scan failure, retries up to 3 times with exponential backoff (1s → 2s → 4s).
     func startScanning(interval: Duration = Constants.scanInterval) -> AsyncStream<WiFiScanEvent> {
         shouldStop = false
-        print("[WiFiLens] WiFiScanner.startScanning(): reset stop flag")
+        Log.scanner.debug("startScanning() — reset stop flag")
         return AsyncStream { continuation in
             let task = Task {
                 while !shouldStop && !Task.isCancelled {
-                    do {
-                        let networks = try client.interface()?.scanForNetworks(withSSID: nil) ?? []
-                        let wrapped = networks.map { WiFiNetwork(from: $0) }
-                        continuation.yield(.networks(wrapped))
-                    } catch {
-                        continuation.yield(.failure(String(describing: error)))
+                    let scanResult = await scanWithRetry()
+                    switch scanResult {
+                    case .success(let networks):
+                        continuation.yield(.networks(networks))
+                    case .failure(let error):
+                        let msg = String(describing: error)
+                        Log.scanner.error("scan exhausted retries: \(msg)")
+                        continuation.yield(.failure(msg))
                     }
 
                     do {
@@ -38,6 +41,29 @@ actor WiFiScanner {
                 task.cancel()
             }
         }
+    }
+
+    private enum ScanError: Error { case exhausted(String) }
+
+    private func scanWithRetry() async -> Result<[WiFiNetwork], ScanError> {
+        for attempt in 1...3 {
+            do {
+                let networks = try client.interface()?.scanForNetworks(withSSID: nil) ?? []
+                let wrapped = networks.map { WiFiNetwork(from: $0) }
+                return .success(wrapped)
+            } catch {
+                let msg = String(describing: error)
+                if attempt < 3 {
+                    let backoff = Duration.seconds(1 << (attempt - 1))
+                    Log.scanner.warning("scan attempt \(attempt) failed, retrying in \(backoff): \(msg)")
+                    do { try await Task.sleep(for: backoff) }
+                    catch { return .failure(.exhausted("cancelled during retry")) }
+                } else {
+                    return .failure(.exhausted(msg))
+                }
+            }
+        }
+        return .failure(.exhausted("unknown error"))
     }
 
     func stopScanning() {

@@ -13,8 +13,21 @@ struct WiFiLensApp: App {
     @State private var sparkleUpdater = SparkleUpdater()
     @State private var sidebarVisibility = NavigationSplitViewVisibility.automatic
     @State private var selectedPage: SidebarPage = .spectrum
+    @State private var showCrashLog: Bool = false
     @AppStorage("mcpEnabled") private var mcpEnabled: Bool = false
     @AppStorage("mcpPort") private var mcpPort: Int = 19840
+
+    init() {
+        Log.bootstrap()
+        CrashReporter.register()
+        if let log = CrashReporter.consumeCrashLog() {
+            _crashLogText = State(initialValue: log)
+            _showCrashLog = State(initialValue: true)
+        }
+        Log.app.info("WiFi Lens launched")
+    }
+
+    @State private var crashLogText: String = ""
 
     var body: some Scene {
         WindowGroup {
@@ -22,6 +35,7 @@ struct WiFiLensApp: App {
                 SidebarView(selectedPage: $selectedPage)
                     .navigationSplitViewColumnWidth(min: 160, ideal: 180)
             } detail: {
+                Group {
                 switch selectedPage {
                 case .spectrum:
                     ContentView(viewModel: viewModel)
@@ -43,6 +57,13 @@ struct WiFiLensApp: App {
                         }
                 case .interfaces:
                     InterfacesView(interfaces: viewModel.networkInfo)
+                }
+                }
+                .alert("Previous Crash Detected", isPresented: $showCrashLog) {
+                    Button("Dismiss", role: .cancel) {}
+                } message: {
+                    ScrollView { Text(crashLogText).font(.caption.monospaced()).textSelection(.enabled) }
+                        .frame(maxHeight: 200)
                 }
             }
         }
@@ -99,7 +120,7 @@ struct WiFiLensApp: App {
         do {
             try viewModel.mcpServer.start()
         } catch {
-            print("[WiFiLens] MCP server failed to start: \(error)")
+            Log.mcp.error("MCP server failed to start: \(error)")
         }
     }
 

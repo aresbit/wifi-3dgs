@@ -30,8 +30,9 @@
 ## Engineering
 
 - [ ] UI / integration tests
-- [ ] Retry strategy for CoreWLAN scan failures
-- [ ] Crash reporting
+- [x] Retry strategy for CoreWLAN scan failures
+- [x] Crash reporting
+- [x] Structured logging (swift-log → OSLog)
 
 ## Out of Scope (for now)
 

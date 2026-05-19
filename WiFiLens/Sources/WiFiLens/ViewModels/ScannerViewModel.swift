@@ -101,25 +101,25 @@ final class ScannerViewModel {
         guard !isScanning else { return }
         isScanning = true
 
-        print("[WiFiLens] start(): begin (reserved isScanning=true)")
+        Log.scanner.info("start() — begin")
         locationManager.requestPermissionIfNeeded()
-        print("[WiFiLens] start(): auth after request = \(locationManager.authorizationStatus.rawValue)")
+        Log.scanner.info("start() — auth status = \(locationManager.authorizationStatus.rawValue)")
 
         supportedBands = await scanner.supportedBands()
-        print("[WiFiLens] start(): supportedBands = \(supportedBands.map { $0.id }.sorted())")
+        Log.scanner.info("start() — supported bands = \(supportedBands.map { $0.id }.sorted())")
         updateInterfaceName()
 
         if locationManager.authorizationStatus == .notDetermined {
             accessState = .waitingForAuthorization
-            print("[WiFiLens] start(): waiting for initial authorization decision")
+            Log.scanner.info("start() — waiting for initial authorization")
             _ = await locationManager.waitForInitialDecisionIfNeeded()
-            print("[WiFiLens] start(): authorization settled = \(locationManager.authorizationStatus.rawValue)")
+            Log.scanner.info("start() — authorization settled = \(locationManager.authorizationStatus.rawValue)")
         } else {
             locationManager.refreshStatus()
         }
 
         guard locationManager.isAuthorizedForSSID else {
-            print("[WiFiLens] start(): authorization denied/restricted")
+            Log.scanner.warning("start() — authorization denied/restricted")
             accessState = .denied
             isScanning = false
             return
@@ -145,7 +145,7 @@ final class ScannerViewModel {
     }
 
     private func startScanLoop() {
-        print("[WiFiLens] startScanLoop(): starting")
+        Log.scanner.info("startScanLoop() — starting")
         scanTask?.cancel()
         isScanning = true
         accessState = .scanning
@@ -159,7 +159,7 @@ final class ScannerViewModel {
                 locationManager.refreshStatus()
 
                 if !locationManager.isAuthorizedForSSID {
-                    print("[WiFiLens] startScanLoop(): lost authorization")
+                    Log.scanner.warning("startScanLoop() — lost authorization")
                     stop()
                     accessState = locationManager.authorizationStatus == .notDetermined
                         ? .waitingForAuthorization
@@ -169,11 +169,11 @@ final class ScannerViewModel {
 
                 switch event {
                 case .failure(let message):
-                    print("[WiFiLens] scan failure: \(message)")
+                    Log.scanner.error("scan failure: \(message)")
                     accessState = .scanFailed(message)
 
                 case .networks(let networks):
-                    print("[WiFiLens] scan success: networks=\(networks.count)")
+                    Log.scanner.info("scan success — \(networks.count) networks")
                     applyNetworks(networks)
                     networkInfo = NetworkInfoService.fetchAll()
                 }
