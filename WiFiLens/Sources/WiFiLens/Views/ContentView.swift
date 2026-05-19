@@ -11,7 +11,6 @@ struct ContentView: View {
     @State private var is5GHzCollapsed = false
     @State private var is6GHzCollapsed = false
     @State private var isTableCollapsed = false
-    @State private var isNetworkInfoCollapsed = false
     @State private var show24InTable = true
     @State private var show5InTable = true
     @State private var show6InTable = true
@@ -152,9 +151,6 @@ struct ContentView: View {
                     }
                 }
 
-        case .networkInfo:
-            networkInfoContent
-                .frame(height: height)
         case .table:
             VStack(spacing: 0) {
                 tableFilterBar
@@ -247,7 +243,7 @@ struct ContentView: View {
     // MARK: - Section Info
 
     private struct SectionInfo {
-        enum Kind { case band(BandChartViewModel); case table; case networkInfo }
+        enum Kind { case band(BandChartViewModel); case table }
         let kind: Kind
         let title: String
         let subtitle: String
@@ -271,9 +267,6 @@ struct ContentView: View {
                           : vm.band == .band5GHz ? Color.green.opacity(0.6)
                           : Color.purple.opacity(0.6))
                     .frame(width: 8, height: 8)
-            case .networkInfo:
-                Image(systemName: "wifi")
-                    .font(.caption)
             case .table:
                 Image(systemName: "tablecells")
                     .font(.caption)
@@ -290,11 +283,6 @@ struct ContentView: View {
                 subtitle: String(localized: "\(vm.allSeriesData.count) networks")
             ))
         }
-        sections.append(SectionInfo(
-            kind: .networkInfo,
-            title: String(localized: "Network Info"),
-            subtitle: viewModel.networkInfo?.displaySSID ?? String(localized: "Disconnected")
-        ))
         sections.append(SectionInfo(
             kind: .table,
             title: String(localized: "Network Table"),
@@ -314,7 +302,6 @@ struct ContentView: View {
             case .band6GHz:  return is6GHzCollapsed
             }
         case .table: return isTableCollapsed
-        case .networkInfo: return isNetworkInfoCollapsed
         }
     }
 
@@ -327,53 +314,6 @@ struct ContentView: View {
             case .band6GHz:  is6GHzCollapsed.toggle()
             }
         case .table: isTableCollapsed.toggle()
-        case .networkInfo: isNetworkInfoCollapsed.toggle()
-        }
-    }
-
-    // MARK: - Network Info
-
-    private var networkInfoContent: some View {
-        guard let info = viewModel.networkInfo else {
-            return AnyView(Text("No Wi-Fi connection").foregroundColor(.secondary))
-        }
-        let leftPairs: [(String, String)] = [
-            ("SSID", info.displaySSID),
-            ("BSSID", info.displayBSSID),
-            ("Channel", info.displayChannel),
-            ("RSSI", info.displayRSSI),
-            ("Tx Rate", info.displayTxRate),
-            ("PHY Mode", info.displayPhyMode),
-        ]
-        let rightPairs: [(String, String)] = [
-            ("Security", info.displaySecurity),
-            ("IP Address", info.displayIP),
-            ("Subnet Mask", info.displaySubnet),
-            ("Router", info.displayRouter),
-            ("DNS", info.displayDNS),
-            ("MAC", info.displayMAC),
-        ]
-        return AnyView(
-            ScrollView {
-                HStack(alignment: .top, spacing: 24) {
-                    kvGrid(leftPairs)
-                    kvGrid(rightPairs)
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 6)
-            }
-        )
-    }
-
-    private func kvGrid(_ pairs: [(String, String)]) -> some View {
-        LazyVGrid(columns: [GridItem(.fixed(80), alignment: .trailing), GridItem(.flexible(), alignment: .leading)], spacing: 2) {
-            ForEach(pairs, id: \.0) { label, value in
-                Text(label)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                Text(value)
-                    .font(.caption)
-            }
         }
     }
 

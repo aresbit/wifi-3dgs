@@ -11,28 +11,40 @@ extension Notification.Name {
 struct WiFiLensApp: App {
     @State private var viewModel = ScannerViewModel()
     @State private var sparkleUpdater = SparkleUpdater()
+    @State private var sidebarVisibility = NavigationSplitViewVisibility.automatic
+    @State private var selectedPage: SidebarPage = .spectrum
     @AppStorage("mcpEnabled") private var mcpEnabled: Bool = false
     @AppStorage("mcpPort") private var mcpPort: Int = 19840
 
     var body: some Scene {
         WindowGroup {
-            ContentView(viewModel: viewModel)
-                .alert("Location Services are disabled", isPresented: $viewModel.locationManager.showDeniedAlert) {
-                    Button("Open Preferences") {
-                        viewModel.locationManager.openLocationPreferences()
-                    }
-                    Button("Ignore", role: .cancel) {}
-                    Button("Quit", role: .destructive) {
-                        viewModel.locationManager.terminateApp()
-                    }
-                } message: {
-                    Text("On macOS 14 Sonoma and Later, Location Services permission is required to get Wi-Fi SSIDs.\nPlease enable Location Services in System Preferences > Security & Privacy > Privacy > Location Services.")
+            NavigationSplitView(columnVisibility: $sidebarVisibility) {
+                SidebarView(selectedPage: $selectedPage)
+                    .navigationSplitViewColumnWidth(min: 160, ideal: 180)
+            } detail: {
+                switch selectedPage {
+                case .spectrum:
+                    ContentView(viewModel: viewModel)
+                        .alert("Location Services are disabled", isPresented: $viewModel.locationManager.showDeniedAlert) {
+                            Button("Open Preferences") {
+                                viewModel.locationManager.openLocationPreferences()
+                            }
+                            Button("Ignore", role: .cancel) {}
+                            Button("Quit", role: .destructive) {
+                                viewModel.locationManager.terminateApp()
+                            }
+                        } message: {
+                            Text("On macOS 14 Sonoma and Later, Location Services permission is required to get Wi-Fi SSIDs.\nPlease enable Location Services in System Preferences > Security & Privacy > Privacy > Location Services.")
+                        }
+                        .onReceive(NotificationCenter.default.publisher(for: .freezeAllBands)) { _ in
+                            for vm in viewModel.bandViewModels {
+                                vm.toggleFreeze()
+                            }
+                        }
+                case .interfaces:
+                    InterfacesView(interfaces: viewModel.networkInfo)
                 }
-                .onReceive(NotificationCenter.default.publisher(for: .freezeAllBands)) { _ in
-                    for vm in viewModel.bandViewModels {
-                        vm.toggleFreeze()
-                    }
-                }
+            }
         }
         .windowResizability(.contentSize)
         .onChange(of: mcpEnabled) { _, enabled in
@@ -71,6 +83,7 @@ struct WiFiLensApp: App {
                     sparkleUpdater.checkForUpdates()
                 }
             }
+
         }
 
         Settings {

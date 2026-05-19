@@ -58,7 +58,7 @@ final class ScannerViewModel {
         didSet { applyGlobalFilterToBands() }
     }
     var selectedNetworkID: String?
-    var networkInfo: NetworkInterfaceInfo?
+    var networkInfo: [NetworkInterfaceInfo] = []
 
     var bandViewModels: [BandChartViewModel] {
         [band24, band5, band6].filter { supportedBands.contains($0.band) }
@@ -175,7 +175,7 @@ final class ScannerViewModel {
                 case .networks(let networks):
                     print("[WiFiLens] scan success: networks=\(networks.count)")
                     applyNetworks(networks)
-                    networkInfo = NetworkInfoService.fetch()
+                    networkInfo = NetworkInfoService.fetchAll()
                 }
             }
         }

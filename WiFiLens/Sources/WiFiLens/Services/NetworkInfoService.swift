@@ -34,6 +34,121 @@ struct NetworkInterfaceInfo {
 }
 
 enum NetworkInfoService {
+    /// All available network interfaces, including virtual ones.
+    /// Uses `getifaddrs()` for discovery so VPN / VM / bridge adapters
+    /// are visible even when they have no SystemConfiguration state.
+    static func fetchAll() -> [NetworkInterfaceInfo] {
+        let store = SCDynamicStoreCreate(nil, "WiFiLens" as CFString, nil, nil)
+        let dns = fetchDNS(store)
+        let wifiMAC = fetchWiFiMAC()
+        let wifiIface = CWWiFiClient.shared().interface()
+        let wifiName = wifiIface?.interfaceName
+
+        // Discover all interfaces via getifaddrs (includes virtual ones)
+        var ifaces: [String: (ips: [String], subnets: [String], mac: String?)] = [:]
+        var addrPtr: UnsafeMutablePointer<ifaddrs>?
+        guard getifaddrs(&addrPtr) == 0, let first = addrPtr else { return [] }
+        defer { freeifaddrs(first) }
+
+        for ptr in sequence(first: first, next: { $0.pointee.ifa_next }) {
+            guard let namePtr = ptr.pointee.ifa_name,
+                  let addr = ptr.pointee.ifa_addr else { continue }
+            let name = String(cString: namePtr)
+            if name == "lo0" { continue }  // skip loopback
+
+            var entry = ifaces[name] ?? (ips: [], subnets: [], mac: nil)
+
+            if addr.pointee.sa_family == sa_family_t(AF_INET) {
+                var buffer = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+                if getnameinfo(addr, socklen_t(addr.pointee.sa_len), &buffer, socklen_t(buffer.count),
+                               nil, 0, NI_NUMERICHOST) == 0 {
+                    entry.ips.append(String(cString: buffer))
+                }
+                // Subnet mask
+                if let netmask = ptr.pointee.ifa_netmask, netmask.pointee.sa_family == sa_family_t(AF_INET) {
+                    var maskBuf = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+                    if getnameinfo(netmask, socklen_t(netmask.pointee.sa_len), &maskBuf, socklen_t(maskBuf.count),
+                                   nil, 0, NI_NUMERICHOST) == 0 {
+                        entry.subnets.append(String(cString: maskBuf))
+                    }
+                }
+            }
+
+            // MAC from AF_LINK
+            if addr.pointee.sa_family == sa_family_t(AF_LINK) {
+                let link = ptr.pointee.ifa_addr.withMemoryRebound(to: sockaddr_dl.self, capacity: 1) { $0.pointee }
+                if link.sdl_alen > 0 {
+                    let macBase = UnsafeRawPointer(ptr.pointee.ifa_addr)
+                        .advanced(by: MemoryLayout<sockaddr_dl>.offset(of: \.sdl_data)! + Int(link.sdl_nlen))
+                    let bytes = macBase.bindMemory(to: UInt8.self, capacity: Int(link.sdl_alen))
+                    entry.mac = (0..<Int(link.sdl_alen)).map {
+                        String(format: "%02x", bytes[$0])
+                    }.joined(separator: ":")
+                }
+            }
+
+            ifaces[name] = entry
+        }
+
+        // Merge IPv4 / router from SystemConfiguration where available
+        if let store,
+           let ipv4Keys = SCDynamicStoreCopyKeyList(store, "State:/Network/Interface/.*/IPv4" as CFString) as? [String] {
+            for key in ipv4Keys {
+                let name = key.components(separatedBy: "/").dropLast().last ?? key
+                guard let dict = SCDynamicStoreCopyValue(store, key as CFString) as? [String: Any] else { continue }
+                if ifaces[name] == nil {
+                    ifaces[name] = (ips: [], subnets: [], mac: nil)
+                }
+                if ifaces[name]?.ips.isEmpty ?? true {
+                    ifaces[name]?.ips = dict["Addresses"] as? [String] ?? []
+                }
+                if ifaces[name]?.subnets.isEmpty ?? true {
+                    ifaces[name]?.subnets = dict["SubnetMasks"] as? [String] ?? []
+                }
+            }
+        }
+
+        // Build result, enriching with Wi-Fi details where applicable
+        var result: [NetworkInterfaceInfo] = []
+        for (name, entry) in ifaces {
+            let isWiFi = name == wifiName
+            let wiFiInfo: (ssid: String?, bssid: String?, channel: Int?, rssi: Int?, txRate: Double?, phyMode: String?, security: String)? = {
+                guard isWiFi, let iface = wifiIface else { return nil }
+                return fetchWiFiDetails(iface)
+            }()
+
+            // Router lookup from SystemConfiguration
+            var router: String? = nil
+            if let store,
+               let ipv4Dict = SCDynamicStoreCopyValue(store, "State:/Network/Interface/\(name)/IPv4" as CFString) as? [String: Any] {
+                if let r = ipv4Dict["Router"] as? String { router = r }
+                else if let arr = ipv4Dict["Router"] as? [String], let first = arr.first { router = first }
+            }
+
+            result.append(NetworkInterfaceInfo(
+                interfaceName: name,
+                hardwareMAC: isWiFi ? wifiMAC : entry.mac,
+                ipv4Addresses: entry.ips,
+                subnetMasks: entry.subnets,
+                router: router,
+                dnsServers: dns,
+                ssid: wiFiInfo?.ssid,
+                bssid: wiFiInfo?.bssid,
+                channel: wiFiInfo?.channel,
+                rssi: wiFiInfo?.rssi,
+                txRate: wiFiInfo?.txRate,
+                phyMode: wiFiInfo?.phyMode,
+                security: wiFiInfo?.security ?? "—"
+            ))
+        }
+        return result.sorted { a, b in
+            let aWiFi = a.ssid != nil
+            let bWiFi = b.ssid != nil
+            if aWiFi != bWiFi { return aWiFi }
+            return a.interfaceName < b.interfaceName
+        }
+    }
+
     static func fetch() -> NetworkInterfaceInfo? {
         let client = CWWiFiClient.shared()
         guard let iface = client.interface(),
@@ -149,4 +264,53 @@ enum NetworkInfoService {
             security: security
         )
     }
+
+    // MARK: - Helpers for fetchAll
+
+    private static func fetchDNS(_ store: SCDynamicStore?) -> [String] {
+        guard let store,
+              let dict = SCDynamicStoreCopyValue(store, "State:/Network/Global/DNS" as CFString) as? [String: Any],
+              let servers = dict["ServerAddresses"] as? [String] else { return [] }
+        return servers
+    }
+
+    private static func fetchWiFiMAC() -> String? {
+        CWWiFiClient.shared().interface()?.hardwareAddress()
+    }
+
+    private static func fetchWiFiDetails(_ iface: CWInterface) -> (ssid: String?, bssid: String?, channel: Int?, rssi: Int?, txRate: Double?, phyMode: String?, security: String)? {
+        let security: String = {
+            switch iface.security().rawValue {
+            case 0: return "None"
+            case 1: return "WEP"
+            case 2: return "WPA Personal"
+            case 3: return "WPA/WPA2 Personal"
+            case 4: return "WPA2 Personal"
+            case 5: return "Personal"
+            case 6: return "Dynamic WEP"
+            case 7: return "WPA Enterprise"
+            case 8: return "WPA/WPA2 Enterprise"
+            case 9: return "WPA2 Enterprise"
+            case 10: return "Enterprise"
+            case 13: return "WPA3 Personal"
+            case 14: return "WPA3 Enterprise"
+            case 15: return "WPA3 Transition"
+            default: return "—"
+            }
+        }()
+        let phyMode: String? = {
+            switch iface.activePHYMode().rawValue {
+            case 0: return "802.11a"
+            case 1: return "802.11b"
+            case 2: return "802.11g"
+            case 3: return "802.11n"
+            case 4: return "802.11ac"
+            case 5: return "802.11ax"
+            case 6: return "802.11be"
+            default: return nil
+            }
+        }()
+        return (iface.ssid(), iface.bssid(), iface.wlanChannel()?.channelNumber, iface.rssiValue(), iface.transmitRate(), phyMode, security)
+    }
+
 }

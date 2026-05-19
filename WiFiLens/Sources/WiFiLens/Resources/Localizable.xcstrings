@@ -349,6 +349,17 @@
         }
       }
     },
+    "Interfaces" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "接口"
+          }
+        }
+      }
+    },
     "Loading..." : {
       "localizations" : {
         "zh-Hans" : {
@@ -424,7 +435,11 @@
         }
       }
     },
+    "No network interfaces found" : {
+
+    },
     "No Wi-Fi connection" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -634,6 +649,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "显示："
+          }
+        }
+      }
+    },
+    "Spectrum" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "频谱"
           }
         }
       }

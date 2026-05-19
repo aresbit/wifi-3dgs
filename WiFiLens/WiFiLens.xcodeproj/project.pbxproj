@@ -35,6 +35,8 @@
 		FB0573B12FBB5BEE005F8214 /* TrendChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0573B02FBB5BEE005F8214 /* TrendChartView.swift */; };
 		FB0573B42FBBEAE4005F8214 /* MCP in Frameworks */ = {isa = PBXBuildFile; productRef = FB0573B32FBBEAE4005F8214 /* MCP */; };
 		FB0573B62FBBEBB9005F8214 /* MCPServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0573B52FBBEBB9005F8214 /* MCPServer.swift */; };
+		FB0573BA2FBBFC31005F8214 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0573B92FBBFC31005F8214 /* SidebarView.swift */; };
+		FB0573BE2FBC22C2005F8214 /* InterfacesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0573BD2FBC22C2005F8214 /* InterfacesView.swift */; };
 		FB0E20882FBAEBCB0064C07A /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = FB0E20872FBAEBCB0064C07A /* Sparkle */; };
 		FB8BB6002FBB04E000FD072E /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = FB8BB5FD2FBB039A00FD072E /* Localizable.xcstrings */; };
 		FB8BB6022FBB07F600FD072E /* NetworkInfoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB8BB6012FBB07F600FD072E /* NetworkInfoService.swift */; };
@@ -87,6 +89,9 @@
 		FB0573AE2FBB5BD6005F8214 /* NetworkSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkSnapshot.swift; sourceTree = "<group>"; };
 		FB0573B02FBB5BEE005F8214 /* TrendChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrendChartView.swift; sourceTree = "<group>"; };
 		FB0573B52FBBEBB9005F8214 /* MCPServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPServer.swift; sourceTree = "<group>"; };
+		FB0573B72FBBF7CF005F8214 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		FB0573B92FBBFC31005F8214 /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
+		FB0573BD2FBC22C2005F8214 /* InterfacesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterfacesView.swift; sourceTree = "<group>"; };
 		FB8BB5FD2FBB039A00FD072E /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		FB8BB6012FBB07F600FD072E /* NetworkInfoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkInfoService.swift; sourceTree = "<group>"; };
 		FB8BB6032FBB0BA600FD072E /* IEParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IEParser.swift; sourceTree = "<group>"; };
@@ -143,6 +148,7 @@
 		2BB8E28CC6CC66A93DA47095 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				FB0573B82FBBF7CF005F8214 /* WiFiLensMCP */,
 				DA6A83BCB3A09FD57BB9E12F /* WiFiLens */,
 			);
 			path = Sources;
@@ -164,9 +170,11 @@
 		6BE0FDD7651B20648F633DAC /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				FB0573BD2FBC22C2005F8214 /* InterfacesView.swift */,
 				3DC8FED8F49854F4CDFD4DCA /* BandChartView.swift */,
 				7B31CBEBC05DEA7ADB03FE01 /* ContentView.swift */,
 				FB0573B02FBB5BEE005F8214 /* TrendChartView.swift */,
+				FB0573B92FBBFC31005F8214 /* SidebarView.swift */,
 				D9E30854EAD194A9FF4D611B /* ExportMenuView.swift */,
 				2A7ED53B7BCC8C0A11662151 /* FilterPopoverView.swift */,
 				28A3299502DE1A130760C8A7 /* NativeTableView.swift */,
@@ -238,6 +246,14 @@
 				1313F682C3C2D860B5EFFFF0 /* WiFiLensTests */,
 			);
 			path = Tests;
+			sourceTree = "<group>";
+		};
+		FB0573B82FBBF7CF005F8214 /* WiFiLensMCP */ = {
+			isa = PBXGroup;
+			children = (
+				FB0573B72FBBF7CF005F8214 /* main.swift */,
+			);
+			path = WiFiLensMCP;
 			sourceTree = "<group>";
 		};
 		FB8BB5FE2FBB039A00FD072E /* Resources */ = {
@@ -367,8 +383,10 @@
 				FE3BDA0DF2CCF2421CE49964 /* WiFiChannel.swift in Sources */,
 				28DCDBF118C838D48BD26773 /* WiFiNetwork.swift in Sources */,
 				FB8BB6042FBB0BA600FD072E /* IEParser.swift in Sources */,
+				FB0573BA2FBBFC31005F8214 /* SidebarView.swift in Sources */,
 				6ECFD8E459A49E4A6FA0FCB0 /* WiFiScanner.swift in Sources */,
 				FB8BB6022FBB07F600FD072E /* NetworkInfoService.swift in Sources */,
+				FB0573BE2FBC22C2005F8214 /* InterfacesView.swift in Sources */,
 				FBD7B34B2FBAED65002C8F5A /* SettingsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
