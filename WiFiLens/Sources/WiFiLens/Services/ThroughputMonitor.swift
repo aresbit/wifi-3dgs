@@ -18,14 +18,21 @@ final class ThroughputMonitor {
     private var lastCounters: [String: (in: UInt64, out: UInt64, ts: Date)] = [:]
     private var pollTask: Task<Void, Never>?
 
-    static let maxSamples = 120  // 2 min at 1s interval
+    static let maxSamples = 90          // retain 90 s
+    private static let cleanupInterval = 60  // purge stale ifaces every 60 polls
+    private var pollCount = 0
 
     func start() {
         guard !isRunning else { return }
         isRunning = true
+        pollCount = 0
         pollTask = Task { @MainActor in
             while !Task.isCancelled {
                 sample()
+                pollCount += 1
+                if pollCount % Self.cleanupInterval == 0 {
+                    purgeStaleInterfaces()
+                }
                 try? await Task.sleep(for: .seconds(1))
             }
         }
@@ -37,11 +44,20 @@ final class ThroughputMonitor {
         pollTask?.cancel()
         pollTask = nil
         lastCounters.removeAll()
+        perInterface.removeAll()
         Log.throughput.info("stopped")
     }
 
     func samples(for name: String) -> [ThroughputSample] {
         perInterface[name] ?? []
+    }
+
+    private func purgeStaleInterfaces() {
+        let now = Date()
+        perInterface = perInterface.filter { _, history in
+            guard let last = history.last else { return false }
+            return now.timeIntervalSince(last.timestamp) < 120  // gone for 2 min → drop
+        }
     }
 
     /// Interfaces that have generated non-zero traffic

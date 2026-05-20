@@ -4,11 +4,11 @@ struct ThroughputChartView: View {
     let samples: [ThroughputSample]
     let interfaceName: String
 
-    private let leftAxisWidth: CGFloat = 44
-    private let bottomAxisHeight: CGFloat = 24
-    private let marginTop: CGFloat = 8
-    private let marginRight: CGFloat = 8
-    private let marginBottom: CGFloat = 4
+    private let leftAxisWidth: CGFloat = 48
+    private let bottomAxisHeight: CGFloat = 26
+    private let marginTop: CGFloat = 10
+    private let marginRight: CGFloat = 10
+    private let marginBottom: CGFloat = 6
 
     var body: some View {
         VStack(spacing: 0) {
@@ -48,110 +48,198 @@ struct ThroughputChartView: View {
                         height: size.height - bottomAxisHeight - marginTop - marginBottom
                     )
 
-                    let values = samples.flatMap { [$0.rateIn, $0.rateOut] }
-                    let dataMax = values.max() ?? 1
-                    let yMax = max(dataMax * 1.15, 1_024.0) // at least 1 KB/s headroom
-                    let yMin: Double = 0
+                    let centerY = chartRect.midY
 
-                    let totalSecs = samples.last.map { $0.timestamp.timeIntervalSince(samples[0].timestamp) } ?? 1
-                    let xMax = Double(samples.count - 1)
-                    let xMin: Double = 0
+                    let maxUp = samples.map(\.rateOut).max() ?? 1
+                    let maxDown = samples.map(\.rateIn).max() ?? 1
+                    let maxRate = max(maxUp, maxDown, 1_024) * 1.15
+                    // Y range: +maxRate (top, upload) → -maxRate (bottom, download)
+                    let yRange = maxRate * 2
+                    let scaleY = chartRect.height / yRange
+                    let scaleX = chartRect.width / CGFloat(max(1, samples.count - 1))
 
-                    let scaleX = chartRect.width / max(1, xMax - xMin)
-                    let scaleY = chartRect.height / max(1, yMax - yMin)
-
-                    // Grid + Y axis labels
-                    let gridColor = Color.gray.opacity(0.15)
+                    // Grid
+                    let gridColor = Color.gray.opacity(0.12)
                     let tickCount = 4
                     for t in 0...tickCount {
-                        let frac = Double(t) / Double(tickCount)
-                        let yVal = yMin + (yMax - yMin) * frac
-                        let y = chartRect.maxY - (yVal - yMin) * scaleY
+                        let rate = maxRate * Double(t) / Double(tickCount)
+                        // Positive (upload) grid line
+                        let yTop = centerY - rate * scaleY
+                        // Negative (download) grid line
+                        let yBot = centerY + rate * scaleY
 
-                        var line = Path()
-                        line.move(to: CGPoint(x: chartRect.minX, y: y))
-                        line.addLine(to: CGPoint(x: chartRect.maxX, y: y))
-                        context.stroke(line, with: .color(gridColor), lineWidth: 1)
+                        if t == 0 {
+                            // Center line — slightly stronger
+                            var cl = Path()
+                            cl.move(to: CGPoint(x: chartRect.minX, y: centerY))
+                            cl.addLine(to: CGPoint(x: chartRect.maxX, y: centerY))
+                            context.stroke(cl, with: .color(gridColor), lineWidth: 1)
+                        } else {
+                            var gl = Path()
+                            gl.move(to: CGPoint(x: chartRect.minX, y: yTop))
+                            gl.addLine(to: CGPoint(x: chartRect.maxX, y: yTop))
+                            context.stroke(gl, with: .color(gridColor), lineWidth: 1)
 
-                        context.draw(
-                            Text(rateAxisLabel(yVal)).font(.caption2).foregroundColor(.secondary),
-                            at: CGPoint(x: chartRect.minX - 22, y: y)
-                        )
-                    }
+                            var g2 = Path()
+                            g2.move(to: CGPoint(x: chartRect.minX, y: yBot))
+                            g2.addLine(to: CGPoint(x: chartRect.maxX, y: yBot))
+                            context.stroke(g2, with: .color(gridColor), lineWidth: 1)
+                        }
 
-                    // X axis time labels
-                    let duration = samples.last.map { $0.timestamp.timeIntervalSince(samples[0].timestamp) } ?? 0
-                    let tickSeconds = niceTickInterval(seconds: duration)
-                    if tickSeconds > 0, let startTime = samples.first?.timestamp {
-                        var lastLabelX: CGFloat = -100
-                        for i in 0..<samples.count {
-                            let elapsed = samples[i].timestamp.timeIntervalSince(startTime)
-                            let labelSecs = (elapsed / tickSeconds).rounded() * tickSeconds
-                            let idx = Int(labelSecs / tickSeconds)
-                            let x = chartRect.minX + CGFloat(i) * scaleX
-                            if x - lastLabelX > 36 {
-                                lastLabelX = x
-
-                                var tick = Path()
-                                tick.move(to: CGPoint(x: x, y: chartRect.maxY))
-                                tick.addLine(to: CGPoint(x: x, y: chartRect.maxY + 4))
-                                context.stroke(tick, with: .color(.secondary.opacity(0.3)), lineWidth: 1)
-
-                                let label = elapsed < 60
-                                    ? "-\(Int(elapsed))s"
-                                    : "-\(Int(elapsed / 60))m"
+                        if t > 0 {
+                            let label = rateLabel(rate)
+                            context.draw(
+                                Text(label).font(.system(size: 8)).foregroundColor(.secondary),
+                                at: CGPoint(x: chartRect.minX - 24, y: yTop)
+                            )
+                            if t < tickCount {
                                 context.draw(
-                                    Text(label).font(.caption2).foregroundColor(.secondary),
-                                    at: CGPoint(x: x, y: chartRect.maxY + 14)
+                                    Text(label).font(.system(size: 8)).foregroundColor(.secondary),
+                                    at: CGPoint(x: chartRect.minX - 24, y: yBot)
                                 )
                             }
                         }
                     }
 
+                    // Center "0" label
+                    context.draw(
+                        Text("0").font(.system(size: 8)).foregroundColor(.secondary),
+                        at: CGPoint(x: chartRect.minX - 10, y: centerY)
+                    )
+
+                    // X axis time labels — index-based, evenly spaced
+                    let now = samples.last?.timestamp ?? Date()
+                    let tickIndices = evenlySpacedIndices(count: samples.count, targetCount: min(6, max(3, samples.count / 15)))
+                    var lastLabelX: CGFloat = -100
+                    for idx in tickIndices {
+                        let x = chartRect.minX + CGFloat(idx) * scaleX
+                        if x - lastLabelX > 40 {
+                            lastLabelX = x
+                            let secs = now.timeIntervalSince(samples[idx].timestamp)
+                            let label = timeLabel(secs)
+
+                            var tick = Path()
+                            tick.move(to: CGPoint(x: x, y: centerY - 3))
+                            tick.addLine(to: CGPoint(x: x, y: centerY + 3))
+                            context.stroke(tick, with: .color(.secondary.opacity(0.25)), lineWidth: 1)
+
+                            context.draw(
+                                Text(label).font(.system(size: 8)).foregroundColor(.secondary),
+                                at: CGPoint(x: x, y: chartRect.maxY + 14)
+                            )
+                        }
+                    }
+
                     // Axes
                     var xAxis = Path()
-                    xAxis.move(to: CGPoint(x: chartRect.minX, y: chartRect.maxY))
-                    xAxis.addLine(to: CGPoint(x: chartRect.maxX, y: chartRect.maxY))
-                    context.stroke(xAxis, with: .color(.secondary), lineWidth: 1)
+                    xAxis.move(to: CGPoint(x: chartRect.minX, y: centerY))
+                    xAxis.addLine(to: CGPoint(x: chartRect.maxX, y: centerY))
+                    context.stroke(xAxis, with: .color(.secondary.opacity(0.5)), lineWidth: 1)
 
                     var yAxis = Path()
                     yAxis.move(to: CGPoint(x: chartRect.minX, y: chartRect.minY))
                     yAxis.addLine(to: CGPoint(x: chartRect.minX, y: chartRect.maxY))
-                    context.stroke(yAxis, with: .color(.secondary), lineWidth: 1)
+                    context.stroke(yAxis, with: .color(.secondary.opacity(0.5)), lineWidth: 1)
 
-                    // Data lines
-                    func drawLine(rate: (ThroughputSample) -> Double, color: Color) {
-                        var path = Path()
-                        var first = true
-                        for i in 0..<samples.count {
-                            let x = chartRect.minX + CGFloat(i) * scaleX
-                            let r = rate(samples[i])
-                            let y = chartRect.maxY - (r - yMin) * scaleY
-                            if first { path.move(to: CGPoint(x: x, y: y)); first = false }
-                            else { path.addLine(to: CGPoint(x: x, y: y)) }
-                        }
-                        context.stroke(path, with: .color(color), lineWidth: 2)
-                    }
+                    // --- Download area (below center, green fill) ---
+                    drawCurvedArea(
+                        context: &context,
+                        points: samples.enumerated().map { i, s in
+                            let y = centerY + s.rateIn * scaleY
+                            return CGPoint(x: chartRect.minX + CGFloat(i) * scaleX, y: max(centerY, y))
+                        },
+                        baseline: centerY,
+                        color: .green
+                    )
 
-                    drawLine(rate: { $0.rateIn }, color: .green)
-                    drawLine(rate: { $0.rateOut }, color: .blue)
+                    // --- Upload area (above center, blue fill) ---
+                    drawCurvedArea(
+                        context: &context,
+                        points: samples.enumerated().map { i, s in
+                            let y = centerY - s.rateOut * scaleY
+                            return CGPoint(x: chartRect.minX + CGFloat(i) * scaleX, y: min(centerY, y))
+                        },
+                        baseline: centerY,
+                        color: .blue
+                    )
                 }
             }
         }
     }
 
-    private func rateAxisLabel(_ bytesPerSec: Double) -> String {
-        if bytesPerSec < 1_024 { return "0" }
-        if bytesPerSec < 10_240 { return String(format: "%.0fK", bytesPerSec / 1_024) }
-        if bytesPerSec < 1_048_576 { return String(format: "%.0fK", bytesPerSec / 1_024) }
-        return String(format: "%.1fM", bytesPerSec / 1_048_576)
+    // MARK: - Curve Fill
+
+    private func drawCurvedArea(
+        context: inout GraphicsContext,
+        points: [CGPoint],
+        baseline: CGFloat,
+        color: Color
+    ) {
+        guard points.count >= 2 else { return }
+
+        // Build smooth curve with Y-clamped control points to prevent overshoot
+        var curve = Path()
+        curve.move(to: points[0])
+        for i in 1..<points.count {
+            let p0 = points[max(0, i - 2)]
+            let p1 = points[i - 1]
+            let p2 = points[i]
+            let p3 = points[min(points.count - 1, i + 1)]
+
+            let yMin = min(p1.y, p2.y)
+            let yMax = max(p1.y, p2.y)
+
+            let rawCP1y = p1.y + (p2.y - p0.y) / 6
+            let rawCP2y = p2.y - (p3.y - p1.y) / 6
+
+            let cp1 = CGPoint(x: p1.x + (p2.x - p0.x) / 6,
+                              y: min(max(rawCP1y, yMin), yMax))
+            let cp2 = CGPoint(x: p2.x - (p3.x - p1.x) / 6,
+                              y: min(max(rawCP2y, yMin), yMax))
+            curve.addCurve(to: p2, control1: cp1, control2: cp2)
+        }
+
+        // Fill area — curve → baseline → back
+        var fill = Path()
+        fill.addPath(curve)
+        fill.addLine(to: CGPoint(x: points.last!.x, y: baseline))
+        fill.addLine(to: CGPoint(x: points.first!.x, y: baseline))
+        fill.closeSubpath()
+
+        context.fill(fill, with: .color(color.opacity(0.18)))
+        context.stroke(curve, with: .color(color.opacity(0.7)), lineWidth: 1.5)
     }
 
-    private func niceTickInterval(seconds: Double) -> Double {
-        if seconds <= 10 { return 2 }
-        if seconds <= 30 { return 5 }
-        if seconds <= 60 { return 10 }
-        if seconds <= 120 { return 30 }
-        return 60
+    // MARK: - Helpers
+
+    /// Evenly spaced indices covering the full range, avoiding overlap.
+    private func evenlySpacedIndices(count: Int, targetCount: Int) -> [Int] {
+        guard count > 0, targetCount > 0 else { return [] }
+        let step = max(1, (count - 1) / max(1, targetCount - 1))
+        var result: [Int] = []
+        for i in stride(from: 0, to: count, by: step) {
+            result.append(i)
+        }
+        // Ensure last point is included
+        if let last = result.last, last != count - 1 {
+            result.append(count - 1)
+        }
+        return result
+    }
+
+    private func rateLabel(_ bytesPerSec: Double) -> String {
+        if bytesPerSec < 1_024 { return String(format: "%.0f", bytesPerSec) }
+        if bytesPerSec < 1_048_576 { return String(format: "%.0fK", bytesPerSec / 1_024) }
+        if bytesPerSec < 1_073_741_824 { return String(format: "%.1fM", bytesPerSec / 1_048_576) }
+        return String(format: "%.1fG", bytesPerSec / 1_073_741_824)
+    }
+
+    private func timeLabel(_ seconds: TimeInterval) -> String {
+        if seconds < 0 { return "0s" }
+        if seconds < 60 { return "\(Int(seconds))s" }
+        let m = Int(seconds) / 60
+        let s = Int(seconds) % 60
+        if s == 0 { return "\(m)m" }
+        return "\(m):\(String(format: "%02d", s))"
     }
 }

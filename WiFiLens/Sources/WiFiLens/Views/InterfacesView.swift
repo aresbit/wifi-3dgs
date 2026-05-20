@@ -263,8 +263,8 @@ struct InterfacesView: View {
     private var selectedMonitorRate: String {
         guard let name = selectedMonitorInterface,
               let last = throughputMonitor.samples(for: name).last else { return "" }
-        let down = rateString(last.rateIn)
-        let up = rateString(last.rateOut)
+        let down = rateDown(last.rateIn)
+        let up = rateUp(last.rateOut)
         return "\(down)  \(up)"
     }
 
@@ -398,14 +398,16 @@ struct InterfacesView: View {
                             Spacer()
 
                             if let s = lastSample {
-                                Text(rateString(s.rateIn))
-                                    .font(.system(size: 12, design: .monospaced))
-                                    .foregroundColor(.green)
+                                Text(rateDown(s.rateIn))
+                                    .font(.system(size: 11, design: .monospaced))
+                                    .foregroundColor(s.rateIn == 0 ? .secondary.opacity(0.5) : .green)
                                     .frame(width: 72, alignment: .trailing)
-                                Text(rateString(s.rateOut))
-                                    .font(.system(size: 12, design: .monospaced))
-                                    .foregroundColor(.blue)
+                                    .lineLimit(1)
+                                Text(rateUp(s.rateOut))
+                                    .font(.system(size: 11, design: .monospaced))
+                                    .foregroundColor(s.rateOut == 0 ? .secondary.opacity(0.5) : .blue)
                                     .frame(width: 72, alignment: .trailing)
+                                    .lineLimit(1)
                             } else {
                                 Text("—").font(.system(size: 12)).foregroundColor(.secondary).frame(width: 72)
                                 Text("—").font(.system(size: 12)).foregroundColor(.secondary).frame(width: 72)
@@ -428,10 +430,17 @@ struct InterfacesView: View {
         .frame(height: height)
     }
 
-    private func rateString(_ bytesPerSec: Double) -> String {
-        if bytesPerSec < 1_024 { return "↓ 0 B/s" }
-        if bytesPerSec < 1_048_576 { return String(format: "↓ %.0f KB/s", bytesPerSec / 1_024) }
-        return String(format: "↓ %.1f MB/s", bytesPerSec / 1_048_576)
+    private func rateDown(_ bytesPerSec: Double) -> String {
+        "↓  " + rateVal(bytesPerSec)
+    }
+    private func rateUp(_ bytesPerSec: Double) -> String {
+        "↑  " + rateVal(bytesPerSec)
+    }
+    private func rateVal(_ bytesPerSec: Double) -> String {
+        if bytesPerSec < 1_024 { return String(format: "%4.0f B", bytesPerSec) }
+        if bytesPerSec < 1_048_576 { return String(format: "%4.0f K", bytesPerSec / 1_024) }
+        if bytesPerSec < 1_073_741_824 { return String(format: "%4.1f M", bytesPerSec / 1_048_576) }
+        return String(format: "%4.1f G", bytesPerSec / 1_073_741_824)
     }
 
     // MARK: - Details (Professional)

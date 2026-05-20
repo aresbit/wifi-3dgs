@@ -5,7 +5,8 @@ enum SidebarPage: String, CaseIterable {
     case spectrum
     case channels
     case interfaces
-    case helpCenter
+    case help
+    case settings
 
     var label: String {
         switch self {
@@ -13,7 +14,8 @@ enum SidebarPage: String, CaseIterable {
         case .spectrum:   String(localized: "Spectrum")
         case .channels:   String(localized: "Channels")
         case .interfaces: String(localized: "Interfaces")
-        case .helpCenter: String(localized: "Help Center")
+        case .help:       String(localized: "Help")
+        case .settings:   String(localized: "Settings")
         }
     }
 
@@ -23,7 +25,8 @@ enum SidebarPage: String, CaseIterable {
         case .spectrum:   "antenna.radiowaves.left.and.right"
         case .channels:   "chart.bar.fill"
         case .interfaces: "cable.connector"
-        case .helpCenter: "questionmark.circle"
+        case .help:       "questionmark.circle"
+        case .settings:   "gearshape"
         }
     }
 }
@@ -34,10 +37,16 @@ struct SidebarView: View {
     var body: some View {
         List(selection: $selectedPage) {
             Section {
-                ForEach(SidebarPage.allCases, id: \.self) { page in
+                ForEach([SidebarPage.overview, .spectrum, .channels, .interfaces], id: \.self) { page in
                     Label(page.label, systemImage: page.icon)
                         .tag(page)
                 }
+            }
+            Section {
+                Label(SidebarPage.help.label, systemImage: SidebarPage.help.icon)
+                    .tag(SidebarPage.help)
+                Label(SidebarPage.settings.label, systemImage: SidebarPage.settings.icon)
+                    .tag(SidebarPage.settings)
             }
         }
         .listStyle(.sidebar)

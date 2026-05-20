@@ -7,6 +7,7 @@ private struct AppRootView: View {
     @Binding var selectedPage: SidebarPage
     @Binding var showCrashLog: Bool
     @Binding var crashLogText: String
+    let sparkleUpdater: SparkleUpdater
     let updateMCPServer: @MainActor () -> Void
 
     @Environment(\.scenePhase) private var scenePhase
@@ -42,8 +43,10 @@ private struct AppRootView: View {
                     ChannelQualityView(channels: viewModel.channelQualities)
                 case .interfaces:
                     InterfacesView(interfaces: viewModel.networkInfo, scannerViewModel: viewModel, throughputMonitor: viewModel.throughputMonitor)
-                case .helpCenter:
+                case .help:
                     HelpCenterView()
+                case .settings:
+                    SettingsView(updater: sparkleUpdater)
                 }
             }
             .alert(String(localized: "Previous Crash Detected"), isPresented: $showCrashLog) {
@@ -101,6 +104,7 @@ struct WiFiLensApp: App {
                 selectedPage: $selectedPage,
                 showCrashLog: $showCrashLog,
                 crashLogText: $crashLogText,
+                sparkleUpdater: sparkleUpdater,
                 updateMCPServer: updateMCPServer
             )
         }
@@ -136,6 +140,15 @@ struct WiFiLensApp: App {
                 .keyboardShortcut(".", modifiers: [.command])
             }
 
+            CommandGroup(replacing: .appSettings) {
+                Button {
+                    selectedPage = .settings
+                } label: {
+                    Label(String(localized: "Settings"), systemImage: "gearshape")
+                }
+                .keyboardShortcut(",", modifiers: .command)
+            }
+
             CommandGroup(after: .appInfo) {
                 Button("Check for Updates…") {
                     sparkleUpdater.checkForUpdates()
@@ -144,9 +157,6 @@ struct WiFiLensApp: App {
 
         }
 
-        Settings {
-            SettingsView(updater: sparkleUpdater)
-        }
     }
 
     @MainActor
